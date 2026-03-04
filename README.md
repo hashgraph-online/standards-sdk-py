@@ -201,6 +201,13 @@ Maintained by Hashgraph Online.
 - [Hedera Documentation](https://docs.hedera.com)
 - [Telegram Community](https://t.me/hashinals)
 
+### 📝 Blog Tutorials
+
+- [Building a Decentralized Registry with Go & HCS-2](https://hol.org/blog/building-decentralized-registry-go-hedara)
+- [HCS-14: Profiles and Agent AID Resolution](https://hol.org/blog/hcs-14-profiles-and-agent-aid-resolution)
+- [ERC-8004: Trustless Agent Registry](https://hol.org/blog/erc-8004-trustless-agent-registry)
+- [Universal Agent Discovery with MCP](https://hol.org/blog/universal-agent-discovery-mcp)
+
 ## License
 
 MIT
