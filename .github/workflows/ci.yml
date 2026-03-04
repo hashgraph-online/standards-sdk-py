@@ -2,14 +2,10 @@ name: standards-sdk-py-ci
 
 on:
   pull_request:
-    paths:
-      - "standards-sdk-py/**"
   push:
     branches:
       - main
       - master
-    paths:
-      - "standards-sdk-py/**"
   workflow_dispatch:
 
 permissions:
@@ -29,14 +25,14 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
     defaults:
       run:
-        working-directory: standards-sdk-py
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
-          cache-dependency-path: standards-sdk-py/pyproject.toml
+          cache-dependency-path: pyproject.toml
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -54,13 +50,18 @@ jobs:
         run: standards-sdk-py-check-parity
       - name: Generate TS/Go inventories
         if: matrix.python-version == '3.11'
-        run: standards-sdk-py-generate-inventory --repo-root ..
+        run: |
+          if [ -d ../standards-sdk ] && [ -d ../standards-sdk-go ]; then
+            standards-sdk-py-generate-inventory --repo-root ..
+          else
+            echo "Skipping inventory generation (sibling TS/Go repos not present)."
+          fi
       - name: Upload coverage artifact
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
         with:
           name: standards-sdk-py-coverage
-          path: standards-sdk-py/coverage.xml
+          path: coverage.xml
           if-no-files-found: error
 
   package:
@@ -69,14 +70,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: standards-sdk-py
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
-          cache-dependency-path: standards-sdk-py/pyproject.toml
+          cache-dependency-path: pyproject.toml
       - name: Install packaging toolchain
         run: |
           python -m pip install --upgrade pip
@@ -89,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: standards-sdk-py-dist
-          path: standards-sdk-py/dist/*
+          path: dist/*
           if-no-files-found: error
 
   integration:
@@ -99,14 +100,14 @@ jobs:
     environment: integration
     defaults:
       run:
-        working-directory: standards-sdk-py
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
-          cache-dependency-path: standards-sdk-py/pyproject.toml
+          cache-dependency-path: pyproject.toml
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
