@@ -1,8 +1,8 @@
 # HOL HCS SDK (Python)
 
-[![PyPI Version](https://img.shields.io/pypi/v/standards-sdk-py?logo=pypi&logoColor=white)](https://pypi.org/project/standards-sdk-py/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/standards-sdk-py)](https://pypi.org/project/standards-sdk-py/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/standards-sdk-py)](https://pypi.org/project/standards-sdk-py/)
+[![PyPI Version](https://img.shields.io/pypi/v/standards_sdk_py?logo=pypi&logoColor=white)](https://pypi.org/project/standards-sdk-py/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/standards_sdk_py)](https://pypi.org/project/standards-sdk-py/)
+[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-tracking%20pending-lightgrey)](https://pypi.org/project/standards-sdk-py/)
 [![CI](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/ci.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/ci.yml)
 [![Security](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/security.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/security.yml)
 [![CodeQL](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/codeql.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/codeql.yml)
