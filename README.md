@@ -9,6 +9,7 @@
 [![Publish](https://img.shields.io/github/actions/workflow/status/hashgraph-online/standards-sdk-py/publish.yml?label=Publish)](https://github.com/hashgraph-online/standards-sdk-py/actions?query=workflow%3Apublish)
 [![License](https://img.shields.io/github/license/hashgraph-online/standards-sdk-py)](./LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/hashgraph-online/standards-sdk-py?style=social)](https://github.com/hashgraph-online/standards-sdk-py/stargazers)
+[![CodeSandbox Examples](https://img.shields.io/badge/CodeSandbox-Examples-151515?logo=codesandbox&logoColor=white)](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples)
 [![Typing: mypy](https://img.shields.io/badge/typing-mypy-blue.svg)](https://mypy.readthedocs.io/)
 [![Code Style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Lint: ruff](https://img.shields.io/badge/lint-ruff-D7FF64.svg)](https://github.com/astral-sh/ruff)
@@ -75,40 +76,30 @@ For standards and API documentation:
 | `standards_sdk_py.mirror` | Mirror node client used by standards and inscriber modules. |
 | `standards_sdk_py.shared` | transport, config, network/operator helpers, and shared typing. |
 
-## Usage Examples
+## CodeSandbox Examples
 
-### Registry Broker
-
-```python
-from standards_sdk_py.registry_broker import RegistryBrokerClient
-
-client = RegistryBrokerClient()
-result = client.search(query="hcs", limit=5)
-print(result.total)
-client.close()
-```
-
-### HCS-10
-
-```python
-from standards_sdk_py.hcs10 import HCS10Client
-
-client = HCS10Client()
-message = client.build_text_message(sender="agent-a", recipient="agent-b", text="hello")
-print(message.op)
-```
-
-### Inscriber
-
-```python
-from standards_sdk_py.inscriber import InscriberAuthClient, InscriberClient
-
-auth_client = InscriberAuthClient()
-auth = auth_client.authenticate(account_id="0.0.1234", private_key="<private-key>", network="testnet")
-client = InscriberClient(api_key=auth.api_key, network="testnet")
-quote = client.generate_quote(files=[{"name": "hello.txt", "data": b"hello"}])
-print(quote.total_hbar)
-```
+- [Examples index](./examples/README.md)
+- [standards-sdk-discovery](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/standards-sdk-discovery)
+- [hcs2-create-registry](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs2-create-registry)
+- [hcs5-build-mint](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs5-build-mint)
+- [hcs6-create-registry](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs6-create-registry)
+- [hcs7-register-metadata](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs7-register-metadata)
+- [hcs10-build-message](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs10-build-message)
+- [hcs11-build-agent-profile](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs11-build-agent-profile)
+- [hcs12-build-register](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs12-build-register)
+- [hcs14-parse-uaid](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs14-parse-uaid)
+- [hcs15-build-account-tx](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs15-build-account-tx)
+- [hcs16-build-flora-topic-tx](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs16-build-flora-topic-tx)
+- [hcs17-build-state-message](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs17-build-state-message)
+- [hcs18-build-announce](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs18-build-announce)
+- [hcs20-deploy-points](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs20-deploy-points)
+- [hcs21-build-declaration](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs21-build-declaration)
+- [hcs26-parse-memos](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs26-parse-memos)
+- [hcs27-publish-checkpoint](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs27-publish-checkpoint)
+- [inscriber-auth-client](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/inscriber-auth-client)
+- [mirror-topic-messages](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/mirror-topic-messages)
+- [registry-broker-skill-domain-proof](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-skill-domain-proof)
+- [registry-broker-uaid-dns-verification](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-uaid-dns-verification)
 
 ## Environment Variables
 
