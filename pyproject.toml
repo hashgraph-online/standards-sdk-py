@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "standards-sdk-py"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python SDK for Hedera standards and Registry Broker parity with TypeScript and Go SDKs."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,8 +43,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/hashgraph-online/standards-sdk-py"
-Documentation = "https://hol.org/docs/libraries/python-sdk/"
+Homepage = "https://hol.org/docs/libraries/standards-sdk/"
+Documentation = "https://hol.org/docs/libraries/standards-sdk/"
 Repository = "https://github.com/hashgraph-online/standards-sdk-py"
 Issues = "https://github.com/hashgraph-online/standards-sdk-py/issues"
 Changelog = "https://github.com/hashgraph-online/standards-sdk-py/blob/main/CHANGELOG.md"
