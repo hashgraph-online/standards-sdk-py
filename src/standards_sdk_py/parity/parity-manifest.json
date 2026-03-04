@@ -1,0 +1,2796 @@
+{
+  "version": "0.1.0",
+  "metadata": {
+    "generated_at": "2026-03-04",
+    "ts_source_root": "standards-sdk/src",
+    "go_source_root": "standards-sdk-go/pkg"
+  },
+  "entries": [
+    {
+      "id": "go-hcs27",
+      "source_sdk": "go",
+      "source_symbol": "hcs27 client exports",
+      "python_symbol": "standards_sdk_py.hcs27.Hcs27Client",
+      "status": "verified"
+    },
+    {
+      "id": "go-inscriber-broker-create-quote",
+      "source_sdk": "go",
+      "source_symbol": "inscriber.GetRegistryBrokerQuote",
+      "python_symbol": "standards_sdk_py.inscriber.InscriberClient.get_registry_broker_quote",
+      "status": "verified"
+    },
+    {
+      "id": "go-inscriber-broker-inscribe",
+      "source_sdk": "go",
+      "source_symbol": "inscriber.InscribeViaRegistryBroker",
+      "python_symbol": "standards_sdk_py.inscriber.InscriberClient.inscribe_via_registry_broker",
+      "status": "verified"
+    },
+    {
+      "id": "go-inscriber-broker-skill-inscribe",
+      "source_sdk": "go",
+      "source_symbol": "inscriber.InscribeSkillViaRegistryBroker",
+      "python_symbol": "standards_sdk_py.inscriber.InscriberClient.inscribe_skill_via_registry_broker",
+      "status": "verified"
+    },
+    {
+      "id": "go-inscriber-generate-quote",
+      "source_sdk": "go",
+      "source_symbol": "inscriber.GenerateQuote",
+      "python_symbol": "standards_sdk_py.inscriber.InscriberClient.get_registry_broker_quote",
+      "status": "verified"
+    },
+    {
+      "id": "go-inscriber-inscribe",
+      "source_sdk": "go",
+      "source_symbol": "inscriber.Inscribe",
+      "python_symbol": "standards_sdk_py.inscriber.InscriberClient.inscribe_via_registry_broker",
+      "status": "verified"
+    },
+    {
+      "id": "go-mirror-client",
+      "source_sdk": "go",
+      "source_symbol": "mirror.Client",
+      "python_symbol": "standards_sdk_py.mirror.MirrorNodeClient",
+      "status": "verified"
+    },
+    {
+      "id": "go-registry-encryption-ensure-key",
+      "source_sdk": "go",
+      "source_symbol": "registrybroker.Client.EnsureAgentKey",
+      "python_symbol": "standards_sdk_py.registry_broker.REGISTRY_BROKER_OPERATIONS",
+      "status": "verified"
+    },
+    {
+      "id": "go-registry-search",
+      "source_sdk": "go",
+      "source_symbol": "registrybroker.Client.Search",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.search",
+      "status": "verified"
+    },
+    {
+      "id": "go-registry-verify-dns",
+      "source_sdk": "go",
+      "source_symbol": "registrybroker.Client.VerifyUaidDNSTXT",
+      "python_symbol": "standards_sdk_py.registry_broker.REGISTRY_BROKER_OPERATIONS",
+      "status": "verified"
+    },
+    {
+      "id": "py-async-mirror-client",
+      "source_sdk": "go",
+      "source_symbol": "async mirror workflows parity requirement",
+      "python_symbol": "standards_sdk_py.mirror.AsyncMirrorNodeClient",
+      "status": "verified"
+    },
+    {
+      "id": "py-async-registry-client",
+      "source_sdk": "ts",
+      "source_symbol": "async network-heavy Registry Broker workflows",
+      "python_symbol": "standards_sdk_py.registry_broker.AsyncRegistryBrokerClient",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-error",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.error",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.error",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-fetch-with-retry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.fetchWithRetry",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.fetchWithRetry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-init",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.init",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.init",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-is-duplicate",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.isDuplicate",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.isDuplicate",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-and-play-audio",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadAndPlayAudio",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadAndPlayAudio",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-config-from-html",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadConfigFromHTML",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadConfigFromHTML",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-glb",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadGLB",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadGLB",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-image",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadImage",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadImage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-media",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadMedia",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadMedia",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-module-exports",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadModuleExports",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadModuleExports",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-resource",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadResource",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadResource",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-script",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadScript",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadScript",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-load-stylesheet",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.loadStylesheet",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.loadStylesheet",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-log",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.log",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.log",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-pause-audio",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.pauseAudio",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.pauseAudio",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-play-audio",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.playAudio",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.playAudio",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-preload-audio",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.preloadAudio",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.preloadAudio",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-preload-image",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.preloadImage",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.preloadImage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-process-queue",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.processQueue",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.processQueue",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-retrieve-hcs1-data",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.retrieveHCS1Data",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.retrieveHCS1Data",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-sleep",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.sleep",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.sleep",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs-update-loading-status",
+      "source_sdk": "ts",
+      "source_symbol": "HCS.updateLoadingStatus",
+      "python_symbol": "standards_sdk_py.hcs3.HCS.updateLoadingStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-10 exports",
+      "python_symbol": "standards_sdk_py.hcs10.Hcs10Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-confirm-connection",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.confirmConnection",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.confirmConnection",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.create",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.create",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-account",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createAccount",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createAccount",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-agent",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createAgent",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-and-register-agent",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createAndRegisterAgent",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createAndRegisterAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-and-register-mcpserver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createAndRegisterMCPServer",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createAndRegisterMCPServer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-connection-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createConnectionTopic",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createConnectionTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-inbound-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createInboundTopic",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createInboundTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-mcpserver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createMCPServer",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createMCPServer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-registry-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createRegistryTopic",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createRegistryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-create-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.createTopic",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.createTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-get-account-and-signer",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.getAccountAndSigner",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.getAccountAndSigner",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-get-client",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.getClient",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.getClient",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-get-inbound-topic-type",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.getInboundTopicType",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.getInboundTopicType",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-get-logger",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.getLogger",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.getLogger",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-get-network",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.getNetwork",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.getNetwork",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-get-operator-account-id",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.getOperatorAccountId",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.getOperatorAccountId",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-handle-connection-request",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.handleConnectionRequest",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.handleConnectionRequest",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-inscribe-file",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.inscribeFile",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.inscribeFile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-inscribe-pfp",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.inscribePfp",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.inscribePfp",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-register-agent",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.registerAgent",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.registerAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-register-agent-with-guarded-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.registerAgentWithGuardedRegistry",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.registerAgentWithGuardedRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-send-message",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.sendMessage",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.sendMessage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-send-transaction",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.sendTransaction",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.sendTransaction",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-send-transaction-operation",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.sendTransactionOperation",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.sendTransactionOperation",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-store-hcs11-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.storeHCS11Profile",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.storeHCS11Profile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-submit-payload",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.submitPayload",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.submitPayload",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs10-client-wait-for-connection-confirmation",
+      "source_sdk": "ts",
+      "source_symbol": "HCS10Client.waitForConnectionConfirmation",
+      "python_symbol": "standards_sdk_py.hcs10.HCS10Client.waitForConnectionConfirmation",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-11 exports",
+      "python_symbol": "standards_sdk_py.hcs11.Hcs11Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-create-aiagent-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.createAIAgentProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.createAIAgentProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-create-and-inscribe-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.createAndInscribeProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.createAndInscribeProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-create-mcpserver-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.createMCPServerProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.createMCPServerProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-create-personal-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.createPersonalProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.createPersonalProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-fetch-profile-by-account-id",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.fetchProfileByAccountId",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.fetchProfileByAccountId",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-get-agent-type-from-metadata",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.getAgentTypeFromMetadata",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.getAgentTypeFromMetadata",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-get-capabilities-from-tags",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.getCapabilitiesFromTags",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.getCapabilitiesFromTags",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-get-client",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.getClient",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.getClient",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-get-operator-id",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.getOperatorId",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.getOperatorId",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-initialize-operator",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.initializeOperator",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.initializeOperator",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-inscribe-image",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.inscribeImage",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.inscribeImage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-inscribe-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.inscribeProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.inscribeProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-parse-profile-from-string",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.parseProfileFromString",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.parseProfileFromString",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-profile-to-jsonstring",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.profileToJSONString",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.profileToJSONString",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-set-profile-for-account-memo",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.setProfileForAccountMemo",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.setProfileForAccountMemo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-update-account-memo-with-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.updateAccountMemoWithProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.updateAccountMemoWithProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs11-client-validate-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS11Client.validateProfile",
+      "python_symbol": "standards_sdk_py.hcs11.HCS11Client.validateProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-12 exports",
+      "python_symbol": "standards_sdk_py.hcs12.Hcs12Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-add-action-to-assembly",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.addActionToAssembly",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.addActionToAssembly",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-add-block-to-assembly",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.addBlockToAssembly",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.addBlockToAssembly",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-create-assembly",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.createAssembly",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.createAssembly",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-create-assembly-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.createAssemblyTopic",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.createAssemblyTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-create-registry-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.createRegistryTopic",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.createRegistryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-get-client",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.getClient",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.getClient",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-get-operator-account-id",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.getOperatorAccountId",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.getOperatorAccountId",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-get-operator-private-key",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.getOperatorPrivateKey",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.getOperatorPrivateKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-initialize-registries",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.initializeRegistries",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.initializeRegistries",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-inscribe-file",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.inscribeFile",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.inscribeFile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-register-action",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.registerAction",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.registerAction",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-register-assembly-direct",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.registerAssemblyDirect",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.registerAssemblyDirect",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-register-block",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.registerBlock",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.registerBlock",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-submit-message",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.submitMessage",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.submitMessage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs12-client-update-assembly",
+      "source_sdk": "ts",
+      "source_symbol": "HCS12Client.updateAssembly",
+      "python_symbol": "standards_sdk_py.hcs12.HCS12Client.updateAssembly",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-14 exports",
+      "python_symbol": "standards_sdk_py.hcs14.Hcs14Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-canonicalize-agent-data",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.canonicalizeAgentData",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.canonicalizeAgentData",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-configure-hedera-client",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.configureHederaClient",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.configureHederaClient",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-create-did",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.createDid",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.createDid",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-create-did-with-uaid",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.createDidWithUaid",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.createDidWithUaid",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-create-uaid",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.createUaid",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.createUaid",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-filter-adapters",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.filterAdapters",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.filterAdapters",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-filter-issuers-by-method",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.filterIssuersByMethod",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.filterIssuersByMethod",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-filter-profile-resolvers-by-method",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.filterProfileResolversByMethod",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.filterProfileResolversByMethod",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-filter-resolvers-by-method",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.filterResolversByMethod",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.filterResolversByMethod",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-filter-uaid-profile-resolvers-by-method",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.filterUaidProfileResolversByMethod",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.filterUaidProfileResolversByMethod",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-filter-uaid-profile-resolvers-by-profile-id",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.filterUaidProfileResolversByProfileId",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.filterUaidProfileResolversByProfileId",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-get-issuer-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.getIssuerRegistry",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.getIssuerRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-get-resolver-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.getResolverRegistry",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.getResolverRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-is-eip155-caip10",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.isEip155Caip10",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.isEip155Caip10",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-is-hedera-caip10",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.isHederaCaip10",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.isHederaCaip10",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-is-hedera-network",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.isHederaNetwork",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.isHederaNetwork",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-list-adapters",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.listAdapters",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.listAdapters",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-list-issuers",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.listIssuers",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.listIssuers",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-list-profile-resolvers",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.listProfileResolvers",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.listProfileResolvers",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-list-resolvers",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.listResolvers",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.listResolvers",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-list-uaid-profile-resolvers",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.listUaidProfileResolvers",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.listUaidProfileResolvers",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-parse-hcs14-did",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.parseHcs14Did",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.parseHcs14Did",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-parse-hedera-caip10",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.parseHederaCaip10",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.parseHederaCaip10",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-adapter",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerAdapter",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerAdapter",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-aid-dns-web-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerAidDnsWebProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerAidDnsWebProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-ans-dns-web-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerAnsDnsWebProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerAnsDnsWebProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-hcs11-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerHcs11ProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerHcs11ProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-hedera-issuer",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerHederaIssuer",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerHederaIssuer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-hedera-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerHederaResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerHederaResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-uaid-did-resolution-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerUaidDidResolutionProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerUaidDidResolutionProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-uaid-dns-web-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerUaidDnsWebProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerUaidDnsWebProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-register-uaid-profile-resolver",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.registerUaidProfileResolver",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.registerUaidProfileResolver",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-resolve-did-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.resolveDidProfile",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.resolveDidProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-resolve-uaid-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.resolveUaidProfile",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.resolveUaidProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-to-eip155-caip10",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.toEip155Caip10",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.toEip155Caip10",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs14-client-to-hedera-caip10",
+      "source_sdk": "ts",
+      "source_symbol": "HCS14Client.toHederaCaip10",
+      "python_symbol": "standards_sdk_py.hcs14.HCS14Client.toHederaCaip10",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs15",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-15 exports",
+      "python_symbol": "standards_sdk_py.hcs15.Hcs15Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs15-client-close",
+      "source_sdk": "ts",
+      "source_symbol": "HCS15Client.close",
+      "python_symbol": "standards_sdk_py.hcs15.HCS15Client.close",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs15-client-create-base-account",
+      "source_sdk": "ts",
+      "source_symbol": "HCS15Client.createBaseAccount",
+      "python_symbol": "standards_sdk_py.hcs15.HCS15Client.createBaseAccount",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs15-client-create-petal-account",
+      "source_sdk": "ts",
+      "source_symbol": "HCS15Client.createPetalAccount",
+      "python_symbol": "standards_sdk_py.hcs15.HCS15Client.createPetalAccount",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs15-client-get-key-type",
+      "source_sdk": "ts",
+      "source_symbol": "HCS15Client.getKeyType",
+      "python_symbol": "standards_sdk_py.hcs15.HCS15Client.getKeyType",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-16 exports",
+      "python_symbol": "standards_sdk_py.hcs16.Hcs16Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-assemble-key-list",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.assembleKeyList",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.assembleKeyList",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-create-flora-account",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.createFloraAccount",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.createFloraAccount",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-create-flora-account-with-topics",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.createFloraAccountWithTopics",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.createFloraAccountWithTopics",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-create-flora-profile",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.createFloraProfile",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.createFloraProfile",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-create-flora-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.createFloraTopic",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.createFloraTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-publish-flora-created",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.publishFloraCreated",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.publishFloraCreated",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-send-flora-created",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.sendFloraCreated",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.sendFloraCreated",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-send-flora-join-accepted",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.sendFloraJoinAccepted",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.sendFloraJoinAccepted",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-send-flora-join-request",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.sendFloraJoinRequest",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.sendFloraJoinRequest",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-send-flora-join-vote",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.sendFloraJoinVote",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.sendFloraJoinVote",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-send-state-update",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.sendStateUpdate",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.sendStateUpdate",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-send-transaction",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.sendTransaction",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.sendTransaction",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs16-client-sign-schedule",
+      "source_sdk": "ts",
+      "source_symbol": "HCS16Client.signSchedule",
+      "python_symbol": "standards_sdk_py.hcs16.HCS16Client.signSchedule",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs17",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-17 exports",
+      "python_symbol": "standards_sdk_py.hcs17.Hcs17Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs17-client-compute-and-publish",
+      "source_sdk": "ts",
+      "source_symbol": "HCS17Client.computeAndPublish",
+      "python_symbol": "standards_sdk_py.hcs17.HCS17Client.computeAndPublish",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs17-client-create-state-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS17Client.createStateTopic",
+      "python_symbol": "standards_sdk_py.hcs17.HCS17Client.createStateTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs17-client-get-key-type",
+      "source_sdk": "ts",
+      "source_symbol": "HCS17Client.getKeyType",
+      "python_symbol": "standards_sdk_py.hcs17.HCS17Client.getKeyType",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs17-client-submit-message",
+      "source_sdk": "ts",
+      "source_symbol": "HCS17Client.submitMessage",
+      "python_symbol": "standards_sdk_py.hcs17.HCS17Client.submitMessage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-18 exports",
+      "python_symbol": "standards_sdk_py.hcs18.Hcs18Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18-client-announce",
+      "source_sdk": "ts",
+      "source_symbol": "HCS18Client.announce",
+      "python_symbol": "standards_sdk_py.hcs18.HCS18Client.announce",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18-client-complete",
+      "source_sdk": "ts",
+      "source_symbol": "HCS18Client.complete",
+      "python_symbol": "standards_sdk_py.hcs18.HCS18Client.complete",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18-client-create-discovery-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS18Client.createDiscoveryTopic",
+      "python_symbol": "standards_sdk_py.hcs18.HCS18Client.createDiscoveryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18-client-propose",
+      "source_sdk": "ts",
+      "source_symbol": "HCS18Client.propose",
+      "python_symbol": "standards_sdk_py.hcs18.HCS18Client.propose",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18-client-respond",
+      "source_sdk": "ts",
+      "source_symbol": "HCS18Client.respond",
+      "python_symbol": "standards_sdk_py.hcs18.HCS18Client.respond",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs18-client-withdraw",
+      "source_sdk": "ts",
+      "source_symbol": "HCS18Client.withdraw",
+      "python_symbol": "standards_sdk_py.hcs18.HCS18Client.withdraw",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-2 exports",
+      "python_symbol": "standards_sdk_py.hcs2.Hcs2Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-close",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.close",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.close",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-create-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.createRegistry",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.createRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-delete-entry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.deleteEntry",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.deleteEntry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-get-key-type",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.getKeyType",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.getKeyType",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-get-operator-key",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.getOperatorKey",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.getOperatorKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-get-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.getRegistry",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.getRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-get-topic-info",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.getTopicInfo",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.getTopicInfo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-migrate-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.migrateRegistry",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.migrateRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-register-entry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.registerEntry",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.registerEntry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-submit-message",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.submitMessage",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.submitMessage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs2-client-update-entry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS2Client.updateEntry",
+      "python_symbol": "standards_sdk_py.hcs2.HCS2Client.updateEntry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-20 exports",
+      "python_symbol": "standards_sdk_py.hcs20.Hcs20Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-burn-points",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.burnPoints",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.burnPoints",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-create-public-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.createPublicTopic",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.createPublicTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-create-registry-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.createRegistryTopic",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.createRegistryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-deploy-points",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.deployPoints",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.deployPoints",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-mint-points",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.mintPoints",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.mintPoints",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-register-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.registerTopic",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.registerTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs20-client-transfer-points",
+      "source_sdk": "ts",
+      "source_symbol": "HCS20Client.transferPoints",
+      "python_symbol": "standards_sdk_py.hcs20.HCS20Client.transferPoints",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-21 exports",
+      "python_symbol": "standards_sdk_py.hcs21.Hcs21Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-create-adapter-category-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.createAdapterCategoryTopic",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.createAdapterCategoryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-create-adapter-version-pointer-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.createAdapterVersionPointerTopic",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.createAdapterVersionPointerTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-create-registry-discovery-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.createRegistryDiscoveryTopic",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.createRegistryDiscoveryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-create-registry-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.createRegistryTopic",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.createRegistryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-inscribe-metadata",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.inscribeMetadata",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.inscribeMetadata",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-publish-category-entry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.publishCategoryEntry",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.publishCategoryEntry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-publish-declaration",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.publishDeclaration",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.publishDeclaration",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-publish-version-pointer",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.publishVersionPointer",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.publishVersionPointer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-register-category-topic",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.registerCategoryTopic",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.registerCategoryTopic",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs21-client-resolve-version-pointer",
+      "source_sdk": "ts",
+      "source_symbol": "HCS21Client.resolveVersionPointer",
+      "python_symbol": "standards_sdk_py.hcs21.HCS21Client.resolveVersionPointer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs26",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-26 exports",
+      "python_symbol": "standards_sdk_py.hcs26.Hcs26Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs3",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-3 exports",
+      "python_symbol": "standards_sdk_py.hcs3.Hcs3Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs5",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-5 exports",
+      "python_symbol": "standards_sdk_py.hcs5.Hcs5Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs5-client-create-hashinal",
+      "source_sdk": "ts",
+      "source_symbol": "HCS5Client.createHashinal",
+      "python_symbol": "standards_sdk_py.hcs5.HCS5Client.createHashinal",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs5-client-mint",
+      "source_sdk": "ts",
+      "source_symbol": "HCS5Client.mint",
+      "python_symbol": "standards_sdk_py.hcs5.HCS5Client.mint",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-6 exports",
+      "python_symbol": "standards_sdk_py.hcs6.Hcs6Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-close",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.close",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.close",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-create-hashinal",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.createHashinal",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.createHashinal",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-create-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.createRegistry",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.createRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-get-key-type",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.getKeyType",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.getKeyType",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-get-operator-key",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.getOperatorKey",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.getOperatorKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-get-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.getRegistry",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.getRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-inscribe-and-mint",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.inscribeAndMint",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.inscribeAndMint",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-mint",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.mint",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.mint",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-register",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.register",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.register",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-register-entry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.registerEntry",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.registerEntry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-register-entry-with-key",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.registerEntryWithKey",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.registerEntryWithKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-submit-message",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.submitMessage",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.submitMessage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs6-client-submit-message-with-key",
+      "source_sdk": "ts",
+      "source_symbol": "HCS6Client.submitMessageWithKey",
+      "python_symbol": "standards_sdk_py.hcs6.HCS6Client.submitMessageWithKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs7",
+      "source_sdk": "ts",
+      "source_symbol": "hcs-7 exports",
+      "python_symbol": "standards_sdk_py.hcs7.Hcs7Client",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs7-client-close",
+      "source_sdk": "ts",
+      "source_symbol": "HCS7Client.close",
+      "python_symbol": "standards_sdk_py.hcs7.HCS7Client.close",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs7-client-create-registry",
+      "source_sdk": "ts",
+      "source_symbol": "HCS7Client.createRegistry",
+      "python_symbol": "standards_sdk_py.hcs7.HCS7Client.createRegistry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs7-client-get-key-type",
+      "source_sdk": "ts",
+      "source_symbol": "HCS7Client.getKeyType",
+      "python_symbol": "standards_sdk_py.hcs7.HCS7Client.getKeyType",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs7-client-register-config",
+      "source_sdk": "ts",
+      "source_symbol": "HCS7Client.registerConfig",
+      "python_symbol": "standards_sdk_py.hcs7.HCS7Client.registerConfig",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hcs7-client-register-metadata",
+      "source_sdk": "ts",
+      "source_symbol": "HCS7Client.registerMetadata",
+      "python_symbol": "standards_sdk_py.hcs7.HCS7Client.registerMetadata",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-check-key-list-access",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.checkKeyListAccess",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.checkKeyListAccess",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-configure-mirror-node",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.configureMirrorNode",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.configureMirrorNode",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-configure-retry",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.configureRetry",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.configureRetry",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-account-balance",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getAccountBalance",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getAccountBalance",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-account-memo",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getAccountMemo",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getAccountMemo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-account-nfts",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getAccountNfts",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getAccountNfts",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-account-tokens",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getAccountTokens",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getAccountTokens",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-base-url",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getBaseUrl",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getBaseUrl",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-block",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getBlock",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getBlock",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-blocks",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getBlocks",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getBlocks",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContract",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContract",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-actions",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractActions",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractActions",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-logs",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractLogs",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractLogs",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-logs-by-contract",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractLogsByContract",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractLogsByContract",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-result",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractResult",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractResult",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-results",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractResults",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractResults",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-results-by-contract",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractResultsByContract",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractResultsByContract",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contract-state",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContractState",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContractState",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-contracts",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getContracts",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getContracts",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-hbarprice",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getHBARPrice",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getHBARPrice",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-network-fees",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getNetworkFees",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getNetworkFees",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-network-info",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getNetworkInfo",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getNetworkInfo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-network-stake",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getNetworkStake",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getNetworkStake",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-network-supply",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getNetworkSupply",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getNetworkSupply",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-nft-info",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getNftInfo",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getNftInfo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-nfts-by-token",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getNftsByToken",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getNftsByToken",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-opcode-traces",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getOpcodeTraces",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getOpcodeTraces",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-outstanding-token-airdrops",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getOutstandingTokenAirdrops",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getOutstandingTokenAirdrops",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-pending-token-airdrops",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getPendingTokenAirdrops",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getPendingTokenAirdrops",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-public-key",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getPublicKey",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getPublicKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-schedule-info",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getScheduleInfo",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getScheduleInfo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-scheduled-transaction-status",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getScheduledTransactionStatus",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getScheduledTransactionStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-token-info",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTokenInfo",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTokenInfo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-topic-fees",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTopicFees",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTopicFees",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-topic-info",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTopicInfo",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTopicInfo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-topic-messages",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTopicMessages",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTopicMessages",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-topic-messages-by-filter",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTopicMessagesByFilter",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTopicMessagesByFilter",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-transaction",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTransaction",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTransaction",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-get-transaction-by-timestamp",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.getTransactionByTimestamp",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.getTransactionByTimestamp",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-read-smart-contract-query",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.readSmartContractQuery",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.readSmartContractQuery",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-request-account",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.requestAccount",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.requestAccount",
+      "status": "verified"
+    },
+    {
+      "id": "ts-hedera-mirror-node-validate-nftownership",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode.validateNFTOwnership",
+      "python_symbol": "standards_sdk_py.mirror.HederaMirrorNode.validateNFTOwnership",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-generate-quote",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.generateQuote",
+      "python_symbol": "standards_sdk_py.inscriber.generate_quote",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-get-registry-broker-quote",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.getRegistryBrokerQuote",
+      "python_symbol": "standards_sdk_py.inscriber.get_registry_broker_quote",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-inscribe",
+      "source_sdk": "ts",
+      "source_symbol": "inscribe.inscribe",
+      "python_symbol": "standards_sdk_py.inscriber.InscriberClient.inscribe_via_registry_broker",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-inscribe-2",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.inscribe",
+      "python_symbol": "standards_sdk_py.inscriber.inscribe",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-inscribe-via-registry-broker",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.inscribeViaRegistryBroker",
+      "python_symbol": "standards_sdk_py.inscriber.inscribe_via_registry_broker",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-inscribe-with-signer",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.inscribeWithSigner",
+      "python_symbol": "standards_sdk_py.inscriber.inscribe_with_signer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-retrieve-inscription",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.retrieveInscription",
+      "python_symbol": "standards_sdk_py.inscriber.retrieve_inscription",
+      "status": "verified"
+    },
+    {
+      "id": "ts-inscriber-wait-for-inscription-confirmation",
+      "source_sdk": "ts",
+      "source_symbol": "inscriber.waitForInscriptionConfirmation",
+      "python_symbol": "standards_sdk_py.inscriber.wait_for_inscription_confirmation",
+      "status": "verified"
+    },
+    {
+      "id": "ts-mirror-client",
+      "source_sdk": "ts",
+      "source_symbol": "HederaMirrorNode",
+      "python_symbol": "standards_sdk_py.mirror.MirrorNodeClient",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-accept-conversation",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.acceptConversation",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.acceptConversation",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-adapter-registry-adapters",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.adapterRegistryAdapters",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.adapterRegistryAdapters",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-adapter-registry-categories",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.adapterRegistryCategories",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.adapterRegistryCategories",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-adapter-registry-submission-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.adapterRegistrySubmissionStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.adapterRegistrySubmissionStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-adapters",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.adapters",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.adapters",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-adapters-detailed",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.adaptersDetailed",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.adaptersDetailed",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-assert-node-runtime",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.assertNodeRuntime",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.assertNodeRuntime",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-attach-decrypted-history",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.attachDecryptedHistory",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.attachDecryptedHistory",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-authenticate-with-ledger",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.authenticateWithLedger",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.authenticateWithLedger",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-authenticate-with-ledger-credentials",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.authenticateWithLedgerCredentials",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.authenticateWithLedgerCredentials",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-bootstrap-encryption-options",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.bootstrapEncryptionOptions",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.bootstrapEncryptionOptions",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-buffer-from-string",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.bufferFromString",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.bufferFromString",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-build-cipher-envelope",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.buildCipherEnvelope",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.buildCipherEnvelope",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-build-url",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.buildUrl",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.buildUrl",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-buy-credits-with-x402",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.buyCreditsWithX402",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.buyCreditsWithX402",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-chat",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.chat",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.chat",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-check-agent-feedback-eligibility",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.checkAgentFeedbackEligibility",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.checkAgentFeedbackEligibility",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-close-uaid-connection",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.closeUaidConnection",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.closeUaidConnection",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-compact-history",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.compactHistory",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.compactHistory",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-create-adapter-registry-category",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createAdapterRegistryCategory",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createAdapterRegistryCategory",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-create-ephemeral-key-pair",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createEphemeralKeyPair",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createEphemeralKeyPair",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-create-ledger-challenge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createLedgerChallenge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createLedgerChallenge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-create-plaintext-conversation-handle",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createPlaintextConversationHandle",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createPlaintextConversationHandle",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-create-skill-domain-proof-challenge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createSkillDomainProofChallenge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createSkillDomainProofChallenge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-create-verification-challenge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createVerificationChallenge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createVerificationChallenge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-dashboard-stats",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.dashboardStats",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.dashboardStats",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-decrypt-history-entry-from-context",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.decryptHistoryEntryFromContext",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.decryptHistoryEntryFromContext",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-delay",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.delay",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.delay",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-derive-shared-secret",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.deriveSharedSecret",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.deriveSharedSecret",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-detect-protocol",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.detectProtocol",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.detectProtocol",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-encryption",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.encryption",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.encryption",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-encryption-ready",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.encryptionReady",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.encryptionReady",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-end-session",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.endSession",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.endSession",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-ensure-credits-for-registration",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.ensureCreditsForRegistration",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.ensureCreditsForRegistration",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-execute-history-auto-top-up",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.executeHistoryAutoTopUp",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.executeHistoryAutoTopUp",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-extract-insufficient-credits-details",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.extractInsufficientCreditsDetails",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.extractInsufficientCreditsDetails",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-facets",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.facets",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.facets",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-fetch-encryption-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.fetchEncryptionStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.fetchEncryptionStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-fetch-history-snapshot",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.fetchHistorySnapshot",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.fetchHistorySnapshot",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-generate-encryption-key-pair",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.generateEncryptionKeyPair",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.generateEncryptionKeyPair",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-additional-registries",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getAdditionalRegistries",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getAdditionalRegistries",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-agent-feedback",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getAgentFeedback",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getAgentFeedback",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-default-headers",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getDefaultHeaders",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getDefaultHeaders",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-my-skills-list",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getMySkillsList",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getMySkillsList",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-recommended-skill-version",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getRecommendedSkillVersion",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getRecommendedSkillVersion",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-register-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getRegisterStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getRegisterStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-registration-progress",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getRegistrationProgress",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getRegistrationProgress",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-registration-quote",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getRegistrationQuote",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getRegistrationQuote",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-badge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillBadge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillBadge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-deprecations",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillDeprecations",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillDeprecations",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-ownership",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillOwnership",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillOwnership",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-publish-job",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillPublishJob",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillPublishJob",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-security-breakdown",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillSecurityBreakdown",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillSecurityBreakdown",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-verification-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillVerificationStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillVerificationStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-vote-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillVoteStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillVoteStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skills-catalog",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillsCatalog",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillsCatalog",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-uaid-connection-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getUaidConnectionStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getUaidConnectionStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-verification-challenge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getVerificationChallenge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getVerificationChallenge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-verification-dns-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getVerificationDnsStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getVerificationDnsStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-verification-ownership",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getVerificationOwnership",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getVerificationOwnership",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-x402-minimums",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getX402Minimums",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getX402Minimums",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-hex-to-buffer",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.hexToBuffer",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.hexToBuffer",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-initialize-agent",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.initializeAgent",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.initializeAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-initialize-encryption-bootstrap",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.initializeEncryptionBootstrap",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.initializeEncryptionBootstrap",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-agent-feedback-entries-index",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listAgentFeedbackEntriesIndex",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listAgentFeedbackEntriesIndex",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-agent-feedback-index",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listAgentFeedbackIndex",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listAgentFeedbackIndex",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-my-skills",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listMySkills",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listMySkills",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-skill-categories",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listSkillCategories",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listSkillCategories",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-skill-tags",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listSkillTags",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listSkillTags",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-skill-versions",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listSkillVersions",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listSkillVersions",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-list-skills",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listSkills",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listSkills",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-metrics-summary",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.metricsSummary",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.metricsSummary",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-normalize-shared-secret",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.normalizeSharedSecret",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.normalizeSharedSecret",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-open-cipher-envelope",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.openCipherEnvelope",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.openCipherEnvelope",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-parse-with-schema",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.parseWithSchema",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.parseWithSchema",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-perform-register-agent",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.performRegisterAgent",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.performRegisterAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-popular-searches",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.popularSearches",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.popularSearches",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-post-encryption-handshake",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.postEncryptionHandshake",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.postEncryptionHandshake",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-purchase-credits-with-hbar",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.purchaseCreditsWithHbar",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.purchaseCreditsWithHbar",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-purchase-credits-with-x402",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.purchaseCreditsWithX402",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.purchaseCreditsWithX402",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-quote-skill-publish",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.quoteSkillPublish",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.quoteSkillPublish",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-register-agent",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.registerAgent",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.registerAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-register-conversation-context-for-encryption",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.registerConversationContextForEncryption",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.registerConversationContextForEncryption",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-register-owned-moltbook-agent",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.registerOwnedMoltbookAgent",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.registerOwnedMoltbookAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-registry-search-by-namespace",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.registrySearchByNamespace",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.registrySearchByNamespace",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-request",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.request",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.request",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-request-json",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.requestJson",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.requestJson",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-request-skill-verification",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.requestSkillVerification",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.requestSkillVerification",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-resolve-decryption-context",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.resolveDecryptionContext",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.resolveDecryptionContext",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-resolve-skill-manifest",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.resolveSkillManifest",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.resolveSkillManifest",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-resolve-skill-markdown",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.resolveSkillMarkdown",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.resolveSkillMarkdown",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-resolve-uaid",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.resolveUaid",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.resolveUaid",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-search-erc8004-by-agent-id",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.searchErc8004ByAgentId",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.searchErc8004ByAgentId",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-search-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.searchStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.searchStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-set-api-key",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.setApiKey",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.setApiKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-set-default-header",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.setDefaultHeader",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.setDefaultHeader",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-set-ledger-api-key",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.setLedgerApiKey",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.setLedgerApiKey",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-set-recommended-skill-version",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.setRecommendedSkillVersion",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.setRecommendedSkillVersion",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-set-skill-deprecation",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.setSkillDeprecation",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.setSkillDeprecation",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-set-skill-vote",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.setSkillVote",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.setSkillVote",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-should-auto-top-up-history",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.shouldAutoTopUpHistory",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.shouldAutoTopUpHistory",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-skills-config",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.skillsConfig",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.skillsConfig",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-start-chat",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.startChat",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.startChat",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-start-conversation",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.startConversation",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.startConversation",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-submit-adapter-registry-adapter",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.submitAdapterRegistryAdapter",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.submitAdapterRegistryAdapter",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-submit-agent-feedback",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.submitAgentFeedback",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.submitAgentFeedback",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-update-agent",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.updateAgent",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.updateAgent",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-validate-uaid",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.validateUaid",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.validateUaid",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-vector-search",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.vectorSearch",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.vectorSearch",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-verify-ledger-challenge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.verifyLedgerChallenge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.verifyLedgerChallenge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-verify-sender-ownership",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.verifySenderOwnership",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.verifySenderOwnership",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-verify-skill-domain-proof",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.verifySkillDomainProof",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.verifySkillDomainProof",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-verify-uaid-dns-txt",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.verifyUaidDnsTxt",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.verifyUaidDnsTxt",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-verify-verification-challenge",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.verifyVerificationChallenge",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.verifyVerificationChallenge",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-wait-for-registration-completion",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.waitForRegistrationCompletion",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.waitForRegistrationCompletion",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-websocket-stats",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.websocketStats",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.websocketStats",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-create-session",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.createSession",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.createSession",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-get-verification-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getVerificationStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getVerificationStatus",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-list-protocols",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.listProtocols",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.listProtocols",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-operation-map",
+      "source_sdk": "ts",
+      "source_symbol": "registry-broker/client/* endpoint surface",
+      "python_symbol": "standards_sdk_py.registry_broker.REGISTRY_BROKER_OPERATIONS",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-publish-skill",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.publishSkill",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.publishSkill",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-registries",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.registries",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.registries",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-search",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.search",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.search",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-send-message",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.sendMessage",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.sendMessage",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-stats",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.stats",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.stats",
+      "status": "verified"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+name: standards-sdk-py-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_target:
+        description: "Target repository"
+        required: true
+        default: testpypi
+        type: choice
+        options:
+          - testpypi
+          - pypi
+  push:
+    tags:
+      - "standards-sdk-py-v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: standards-sdk-py-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build + Verify
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: standards-sdk-py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: standards-sdk-py/pyproject.toml
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Validate quality gates
+        run: |
+          ruff check .
+          black --check .
+          mypy src
+          pytest -m "not integration"
+          standards-sdk-py-check-parity
+      - name: Build package
+        run: python -m build
+      - name: Validate package metadata
+        run: twine check dist/*
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: standards-sdk-py-dist
+          path: standards-sdk-py/dist/*
+          if-no-files-found: error
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    if: github.event_name == 'push' || github.event.inputs.publish_target == 'testpypi'
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: standards-sdk-py-dist
+          path: dist
+      - name: Publish package distributions to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist
+          verbose: true
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs:
+      - build
+      - publish-testpypi
+    if: (github.event_name == 'push' && !contains(github.ref_name, '-rc')) || github.event.inputs.publish_target == 'pypi'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: standards-sdk-py-dist
+          path: dist
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          verbose: true
+
+  attest:
+    name: Attest Build Provenance
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: standards-sdk-py-dist
+          path: dist
+      - name: Generate artifact attestations
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: "dist/*"
+
+  github-release:
+    name: GitHub Release
+    needs: publish-pypi
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

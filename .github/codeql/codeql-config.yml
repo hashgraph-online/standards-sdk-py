@@ -1,0 +1,10 @@
+name: standards-sdk-py-codeql-config
+
+paths:
+  - standards-sdk-py/src
+  - standards-sdk-py/tests
+
+paths-ignore:
+  - "**/__pycache__/**"
+  - "**/.venv/**"
+  - "**/dist/**"

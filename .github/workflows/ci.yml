@@ -1,0 +1,134 @@
+name: standards-sdk-py-ci
+
+on:
+  pull_request:
+    paths:
+      - "standards-sdk-py/**"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "standards-sdk-py/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: standards-sdk-py-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: standards-sdk-py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: standards-sdk-py/pyproject.toml
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Format
+        run: black --check .
+      - name: Typecheck
+        run: mypy src
+      - name: Unit tests
+        run: pytest -m "not integration" --cov=standards_sdk_py --cov-report=xml --cov-report=term-missing
+      - name: Parity manifest check
+        if: matrix.python-version == '3.11'
+        run: standards-sdk-py-check-parity
+      - name: Generate TS/Go inventories
+        if: matrix.python-version == '3.11'
+        run: standards-sdk-py-generate-inventory --repo-root ..
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: standards-sdk-py-coverage
+          path: standards-sdk-py/coverage.xml
+          if-no-files-found: error
+
+  package:
+    name: Package Build Check
+    needs: quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: standards-sdk-py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: standards-sdk-py/pyproject.toml
+      - name: Install packaging toolchain
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+      - name: Build wheel and sdist
+        run: python -m build
+      - name: Validate package metadata
+        run: twine check dist/*
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standards-sdk-py-dist
+          path: standards-sdk-py/dist/*
+          if-no-files-found: error
+
+  integration:
+    name: Live Integration (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: integration
+    defaults:
+      run:
+        working-directory: standards-sdk-py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: standards-sdk-py/pyproject.toml
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install hedera-sdk-py
+      - name: Run integration tests when credentials exist
+        env:
+          RUN_INTEGRATION: "1"
+          RUN_INSCRIBER_INTEGRATION: "1"
+          REGISTRY_BROKER_BASE_URL: ${{ secrets.REGISTRY_BROKER_BASE_URL }}
+          REGISTRY_BROKER_API_KEY: ${{ secrets.REGISTRY_BROKER_API_KEY }}
+          REGISTRY_BROKER_LEDGER_API_KEY: ${{ secrets.REGISTRY_BROKER_LEDGER_API_KEY }}
+          HEDERA_NETWORK: ${{ secrets.HEDERA_NETWORK }}
+          HEDERA_ACCOUNT_ID: ${{ secrets.HEDERA_ACCOUNT_ID }}
+          HEDERA_PRIVATE_KEY: ${{ secrets.HEDERA_PRIVATE_KEY }}
+          TESTNET_HEDERA_ACCOUNT_ID: ${{ secrets.TESTNET_HEDERA_ACCOUNT_ID }}
+          TESTNET_HEDERA_PRIVATE_KEY: ${{ secrets.TESTNET_HEDERA_PRIVATE_KEY }}
+          MAINNET_HEDERA_ACCOUNT_ID: ${{ secrets.MAINNET_HEDERA_ACCOUNT_ID }}
+          MAINNET_HEDERA_PRIVATE_KEY: ${{ secrets.MAINNET_HEDERA_PRIVATE_KEY }}
+        run: |
+          if [ -z "${REGISTRY_BROKER_API_KEY}" ] && [ -z "${REGISTRY_BROKER_LEDGER_API_KEY}" ] && [ -z "${HEDERA_ACCOUNT_ID}" ] && [ -z "${MAINNET_HEDERA_ACCOUNT_ID}" ] && [ -z "${TESTNET_HEDERA_ACCOUNT_ID}" ]; then
+            echo "No integration credentials configured; skipping live integration run."
+            exit 0
+          fi
+          pytest -m integration -vv -rs

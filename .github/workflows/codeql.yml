@@ -1,0 +1,33 @@
+name: standards-sdk-py-codeql
+
+on:
+  pull_request:
+    paths:
+      - "standards-sdk-py/**"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "standards-sdk-py/**"
+  schedule:
+    - cron: "33 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: CodeQL Analyze (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          config-file: standards-sdk-py/.github/codeql/codeql-config.yml
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
