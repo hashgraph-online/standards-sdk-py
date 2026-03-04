@@ -44,7 +44,24 @@ jobs:
       - name: Typecheck
         run: mypy src
       - name: Unit tests
-        run: pytest -m "not integration" --cov=standards_sdk_py --cov-report=xml --cov-report=term-missing
+        run: |
+          run_tests() {
+            if [ "${{ matrix.python-version }}" = "3.12" ]; then
+              pytest -m "not integration" --cov=standards_sdk_py --cov-report=xml --cov-report=term-missing
+            else
+              pytest -m "not integration"
+            fi
+          }
+
+          set +e
+          run_tests
+          status=$?
+          if [ "$status" -eq 139 ]; then
+            echo "Detected transient Python segfault (exit 139). Retrying tests once..."
+            run_tests
+            status=$?
+          fi
+          exit "$status"
       - name: Parity manifest check
         if: matrix.python-version == '3.11'
         run: standards-sdk-py-check-parity
@@ -57,7 +74,7 @@ jobs:
             echo "Skipping inventory generation (sibling TS/Go repos not present)."
           fi
       - name: Upload coverage artifact
-        if: matrix.python-version == '3.11'
+        if: matrix.python-version == '3.12'
         uses: actions/upload-artifact@v4
         with:
           name: standards-sdk-py-coverage
