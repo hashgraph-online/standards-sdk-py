@@ -1,8 +1,8 @@
 name: standards-sdk-py-codeql-config
 
 paths:
-  - standards-sdk-py/src
-  - standards-sdk-py/tests
+  - src
+  - tests
 
 paths-ignore:
   - "**/__pycache__/**"

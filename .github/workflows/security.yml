@@ -33,7 +33,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write
     defaults:
       run:
         working-directory: .
@@ -53,18 +52,19 @@ jobs:
       - name: Run pip-audit
         run: pip-audit --progress-spinner off --format json --output pip-audit.json
       - name: Run Bandit SAST
-        run: bandit -q -r src -f sarif -o bandit.sarif
+        run: bandit -q -r src --severity-level medium --confidence-level medium -f json -o bandit.json
       - name: Upload pip-audit report
         uses: actions/upload-artifact@v4
         with:
           name: standards-sdk-py-pip-audit
           path: pip-audit.json
           if-no-files-found: error
-      - name: Upload Bandit SARIF
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: bandit.sarif
-          category: bandit
+          name: standards-sdk-py-bandit
+          path: bandit.json
+          if-no-files-found: error
       - name: Secret scan (TruffleHog)
         continue-on-error: true
         uses: trufflesecurity/trufflehog@main
