@@ -74,7 +74,16 @@ jobs:
         with:
           name: standards-sdk-py-dist
           path: dist
-      - name: Publish package distributions to TestPyPI
+      - name: Publish package distributions to TestPyPI (API token)
+        if: ${{ secrets.TEST_PYPI_API_TOKEN != '' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          verbose: true
+      - name: Publish package distributions to TestPyPI (Trusted Publisher)
+        if: ${{ secrets.TEST_PYPI_API_TOKEN == '' }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
@@ -98,7 +107,15 @@ jobs:
         with:
           name: standards-sdk-py-dist
           path: dist
-      - name: Publish package distributions to PyPI
+      - name: Publish package distributions to PyPI (API token)
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
+      - name: Publish package distributions to PyPI (Trusted Publisher)
+        if: ${{ secrets.PYPI_API_TOKEN == '' }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
