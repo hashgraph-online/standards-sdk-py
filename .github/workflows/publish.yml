@@ -22,6 +22,9 @@ concurrency:
   group: standards-sdk-py-publish-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  HOL_SDK_DOCS_URL: https://hol.org/docs/libraries/standards-sdk/
+
 jobs:
   build:
     name: Build + Verify
@@ -48,6 +51,45 @@ jobs:
           mypy src
           pytest -m "not integration"
           standards-sdk-py-check-parity
+      - name: Validate canonical docs metadata
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import tomllib
+
+          docs_url = "https://hol.org/docs/libraries/standards-sdk/"
+          libraries_url = "https://libraries.io/pypi/standards-sdk-py"
+          readme = pathlib.Path("README.md").read_text(encoding="utf-8")
+          if docs_url not in readme:
+              raise SystemExit(f"README.md must include canonical docs URL: {docs_url}")
+          if libraries_url not in readme:
+              raise SystemExit(f"README.md must include Libraries.io URL: {libraries_url}")
+          if "https://pypistats.org/packages/standards-sdk-py" not in readme:
+              raise SystemExit("README.md must include a live PyPI downloads link.")
+
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
+          urls = pyproject.get("project", {}).get("urls", {})
+          for field in ("Homepage", "Documentation"):
+              if urls.get(field) != docs_url:
+                  raise SystemExit(
+                      f"pyproject.toml [project.urls].{field} must equal {docs_url}; got {urls.get(field)!r}"
+                  )
+          if urls.get("Libraries") != libraries_url:
+              raise SystemExit(
+                  f"pyproject.toml [project.urls].Libraries must equal {libraries_url}; got {urls.get('Libraries')!r}"
+              )
+
+          citation = pathlib.Path("CITATION.cff")
+          if not citation.exists():
+              raise SystemExit("CITATION.cff is required for archival and citation metadata.")
+          zenodo = pathlib.Path(".zenodo.json")
+          if not zenodo.exists():
+              raise SystemExit(".zenodo.json is required for Zenodo metadata.")
+          json.loads(zenodo.read_text(encoding="utf-8"))
+
+          print("Canonical docs metadata verified.")
+          PY
       - name: Build package
         run: python -m build
       - name: Validate package metadata
@@ -156,3 +198,104 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+      - name: Ensure GitHub release includes canonical docs URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          docs_line="- Standards SDK docs: ${HOL_SDK_DOCS_URL}"
+          release_notes="$(printf '## Documentation\n%s\n' "${docs_line}")"
+
+          if ! gh release view "${tag}" >/dev/null 2>&1; then
+            gh release create "${tag}" \
+              --title "${tag}" \
+              --generate-notes \
+              --notes "${release_notes}"
+            exit 0
+          fi
+
+          body="$(gh release view "${tag}" --json body --jq '.body // \"\"')"
+          if printf '%s' "${body}" | grep -Fq "${HOL_SDK_DOCS_URL}"; then
+            echo "Release ${tag} already contains canonical docs URL."
+            exit 0
+          fi
+
+          notes_file="$(mktemp)"
+          {
+            printf '%s\n' "${body}"
+            printf '\n%s' "${release_notes}"
+          } > "${notes_file}"
+          gh release edit "${tag}" --notes-file "${notes_file}"
+          rm -f "${notes_file}"
+
+  ecosystem-indexing:
+    name: Ecosystem Indexing + Archive Signals
+    needs: publish-pypi
+    if: github.event_name == 'push' || github.event.inputs.publish_target == 'pypi'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PyPI and Libraries.io indexing
+        run: |
+          python - <<'PY'
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+
+          urls = (
+              "https://pypi.org/project/standards-sdk-py/",
+              "https://libraries.io/pypi/standards-sdk-py",
+          )
+
+          def wait_for_index(url: str) -> None:
+              for attempt in range(1, 11):
+                  try:
+                      request = urllib.request.Request(
+                          url,
+                          headers={"User-Agent": "standards-sdk-py-publish-check"},
+                      )
+                      with urllib.request.urlopen(request, timeout=20) as response:
+                          if 200 <= response.status < 400:
+                              print(f"Indexed: {url}")
+                              return
+                  except urllib.error.HTTPError as exc:
+                      if exc.code == 404 and attempt < 10:
+                          time.sleep(30)
+                          continue
+                      raise
+                  except urllib.error.URLError:
+                      if attempt < 10:
+                          time.sleep(30)
+                          continue
+                      raise
+              raise RuntimeError(f"Timed out waiting for index: {url}")
+
+          for target in urls:
+              wait_for_index(target)
+
+          print("PyPI + Libraries.io indexing verified.")
+          PY
+      - name: Trigger Software Heritage archival save request
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+
+          endpoint = (
+              "https://archive.softwareheritage.org/api/1/origin/save/git/url/"
+              "https://github.com/hashgraph-online/standards-sdk-py/"
+          )
+
+          request = urllib.request.Request(
+              endpoint,
+              method="POST",
+              headers={"User-Agent": "standards-sdk-py-release-workflow"},
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              payload = json.loads(response.read().decode("utf-8"))
+          print(f"Software Heritage save request accepted: id={payload.get('id')}")
+          print(f"Status: {payload.get('save_request_status')}")
+          PY

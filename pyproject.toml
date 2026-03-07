@@ -12,6 +12,9 @@ license = { text = "MIT" }
 authors = [
   { name = "Hashgraph Online" },
 ]
+maintainers = [
+  { name = "Hashgraph Online", email = "support@hol.org" },
+]
 keywords = [
   "hedera",
   "hcs",
@@ -32,6 +35,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Internet",
   "Typing :: Typed",
 ]
@@ -49,6 +53,10 @@ Repository = "https://github.com/hashgraph-online/standards-sdk-py"
 Issues = "https://github.com/hashgraph-online/standards-sdk-py/issues"
 Changelog = "https://github.com/hashgraph-online/standards-sdk-py/blob/main/CHANGELOG.md"
 Security = "https://github.com/hashgraph-online/standards-sdk-py/security/policy"
+Standards = "https://hol.org/docs/standards/"
+"Registry Broker Docs" = "https://hol.org/registry/docs"
+"CodeSandbox Examples" = "https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples"
+Libraries = "https://libraries.io/pypi/standards-sdk-py"
 
 [project.optional-dependencies]
 dev = [

@@ -2,11 +2,13 @@
 
 [![PyPI Version](https://img.shields.io/pypi/v/standards_sdk_py?logo=pypi&logoColor=white)](https://pypi.org/project/standards-sdk-py/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/standards_sdk_py)](https://pypi.org/project/standards-sdk-py/)
-[![PyPI Downloads](https://img.shields.io/badge/PyPI%20downloads-tracking%20pending-lightgrey)](https://pypi.org/project/standards-sdk-py/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/standards-sdk-py)](https://pypistats.org/packages/standards-sdk-py)
+[![Libraries.io Dependencies](https://img.shields.io/librariesio/release/pypi/standards-sdk-py)](https://libraries.io/pypi/standards-sdk-py)
 [![CI](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/ci.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/ci.yml)
 [![Security](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/security.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/security.yml)
 [![CodeQL](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/codeql.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/codeql.yml)
 [![Publish](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/publish.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/publish.yml)
+[![Conda Publish](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/conda-publish.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/conda-publish.yml)
 [![License](https://img.shields.io/github/license/hashgraph-online/standards-sdk-py)](./LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/hashgraph-online/standards-sdk-py?style=social)](https://github.com/hashgraph-online/standards-sdk-py/stargazers)
 [![CodeSandbox Examples](https://img.shields.io/badge/CodeSandbox-Examples-151515?logo=codesandbox&logoColor=white)](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples)
@@ -35,6 +37,20 @@ pytest -q
 pip install standards-sdk-py
 ```
 
+```bash
+conda install -c hashgraph-online standards-sdk-py
+```
+
+## Multi-Language SDK Links
+
+Canonical SDK docs URL: <https://hol.org/docs/libraries/standards-sdk/>
+
+| Language | Package | Source | Canonical Documentation |
+| :--- | :--- | :--- | :--- |
+| TypeScript | `@hol-org/standards-sdk` | [hashgraph-online/standards-sdk](https://github.com/hashgraph-online/standards-sdk) | [https://hol.org/docs/libraries/standards-sdk/](https://hol.org/docs/libraries/standards-sdk/) |
+| Go | `github.com/hashgraph-online/standards-sdk-go` | [hashgraph-online/standards-sdk-go](https://github.com/hashgraph-online/standards-sdk-go) | [https://hol.org/docs/libraries/go-sdk/overview](https://hol.org/docs/libraries/go-sdk/overview) |
+| Python | `standards-sdk-py` | [hashgraph-online/standards-sdk-py](https://github.com/hashgraph-online/standards-sdk-py) | [https://hol.org/docs/libraries/python-sdk/overview](https://hol.org/docs/libraries/python-sdk/overview) |
+
 ## Developer Tooling
 
 ```bash
@@ -49,6 +65,14 @@ For standards and API documentation:
 
 - [Standards SDK Documentation](https://hol.org/docs/libraries/standards-sdk/)
 - [HCS Standards Documentation](https://hol.org/docs/standards)
+- [Libraries.io Package Page](https://libraries.io/pypi/standards-sdk-py)
+
+## Citation and Archival
+
+- Citation metadata: [`CITATION.cff`](./CITATION.cff)
+- Zenodo metadata: [`.zenodo.json`](./.zenodo.json)
+- Software Heritage origin:
+  <https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/hashgraph-online/standards-sdk-py>
 
 ## Supported Packages
 
@@ -180,6 +204,8 @@ Notes:
 - Python matrix CI (`3.11`, `3.12`, `3.13`) for `ruff`, `black`, `mypy`, unit tests, parity checks, and package validation.
 - Security workflows for dependency review, `pip-audit`, Bandit SARIF upload, CodeQL, and verified TruffleHog secret scanning.
 - Release workflow for build + `twine check`, TestPyPI/PyPI trusted publishing, checksum artifacts, provenance attestations, and GitHub release notes.
+- Conda workflow for building packages and uploading to `anaconda.org/hashgraph-online` when `ANACONDA_API_TOKEN` is configured.
+- Release indexing automation verifies PyPI + Libraries.io pages and submits a Software Heritage save request.
 
 ## Contributing
 

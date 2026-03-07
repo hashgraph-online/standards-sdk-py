@@ -1,0 +1,35 @@
+{
+  "title": "standards-sdk-py",
+  "description": "Python SDK for Hiero Consensus Specifications (HCS) and Registry Broker parity with TypeScript and Go SDKs.",
+  "creators": [
+    {
+      "name": "Hashgraph Online",
+      "affiliation": "Hashgraph Online"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "hedera",
+    "hcs",
+    "hashgraph",
+    "registry-broker",
+    "mirror-node",
+    "python-sdk"
+  ],
+  "related_identifiers": [
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/hashgraph-online/standards-sdk-py",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://hol.org/docs/libraries/standards-sdk/",
+      "relation": "isDocumentedBy",
+      "resource_type": "publication-documentation"
+    }
+  ]
+}

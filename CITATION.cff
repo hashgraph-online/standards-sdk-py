@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: standards-sdk-py
+message: "If you use this software, please cite it using this metadata."
+type: software
+authors:
+  - name: Hashgraph Online
+repository-code: https://github.com/hashgraph-online/standards-sdk-py
+url: https://hol.org/docs/libraries/standards-sdk/
+repository-artifact: https://pypi.org/project/standards-sdk-py/
+license: MIT
+version: 0.1.1
+date-released: 2026-03-06
+keywords:
+  - hedera
+  - hcs
+  - hashgraph
+  - registry-broker
+  - mirror-node
+  - python-sdk

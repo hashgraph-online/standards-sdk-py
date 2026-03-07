@@ -1,0 +1,48 @@
+{% set version = environ.get("PKG_VERSION", "0.1.1") %}
+
+package:
+  name: standards-sdk-py
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  number: 0
+  script: "{{ PYTHON }} -m pip install . --no-deps -vv"
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - hatchling >=1.27.0
+  run:
+    - python >=3.11
+    - httpx >=0.27.2,<1.0.0
+    - hedera-sdk-py >=2.50.0,<3.0.0
+    - pydantic >=2.10.0,<3.0.0
+    - typing-extensions >=4.12.2,<5.0.0
+
+test:
+  imports:
+    - standards_sdk_py
+  commands:
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://hol.org/docs/libraries/standards-sdk/
+  summary: Python SDK for Hedera standards and Registry Broker parity with TypeScript and Go SDKs.
+  description: |
+    standards-sdk-py is the Python SDK for Hiero Consensus Specifications (HCS)
+    and the Registry Broker client surface, aligned with the TypeScript and Go SDKs.
+  license: MIT
+  license_file: ../LICENSE
+  doc_url: https://hol.org/docs/libraries/standards-sdk/
+  dev_url: https://github.com/hashgraph-online/standards-sdk-py
+
+extra:
+  recipe-maintainers:
+    - hashgraph-online

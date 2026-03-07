@@ -1,0 +1,94 @@
+name: standards-sdk-py-conda-publish
+
+on:
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - "conda-recipe/**"
+      - ".github/workflows/conda-publish.yml"
+  push:
+    tags:
+      - "standards-sdk-py-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: standards-sdk-py-conda-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-conda:
+    name: Build Conda Package
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    outputs:
+      version: ${{ steps.pkg-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          activate-environment: conda-build
+          miniforge-variant: Miniforge3
+          python-version: "3.11"
+      - name: Install conda build tooling
+        shell: bash -el {0}
+        run: conda install -y conda-build anaconda-client
+      - name: Resolve package version
+        id: pkg-version
+        run: |
+          version="$(python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+          pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          print(pyproject["project"]["version"])
+          PY
+          )"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "PKG_VERSION=${version}" >> "$GITHUB_ENV"
+      - name: Build conda package
+        shell: bash -el {0}
+        run: conda build conda-recipe --output-folder conda-dist
+      - name: Upload conda artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: standards-sdk-py-conda-${{ steps.pkg-version.outputs.version }}
+          path: conda-dist/noarch/*
+          if-no-files-found: error
+
+  publish-anaconda:
+    name: Publish to Anaconda
+    needs: build-conda
+    if: secrets.ANACONDA_API_TOKEN != ''
+    runs-on: ubuntu-latest
+    env:
+      ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+      ANACONDA_OWNER: hashgraph-online
+    steps:
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          activate-environment: conda-publish
+          miniforge-variant: Miniforge3
+          python-version: "3.11"
+      - name: Install anaconda client
+        shell: bash -el {0}
+        run: conda install -y anaconda-client
+      - name: Download built package
+        uses: actions/download-artifact@v4
+        with:
+          name: standards-sdk-py-conda-${{ needs.build-conda.outputs.version }}
+          path: conda-dist
+      - name: Upload package to anaconda.org
+        shell: bash -el {0}
+        run: |
+          anaconda \
+            --token "${ANACONDA_API_TOKEN}" \
+            upload conda-dist/* \
+            --user "${ANACONDA_OWNER}" \
+            --label main \
+            --skip-existing
