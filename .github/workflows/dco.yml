@@ -1,53 +1,48 @@
-name: standards-sdk-py-dco
+name: DCO Check
 
 on:
   pull_request:
-    branches:
-      - main
-      - master
-
-permissions:
-  contents: read
-  pull-requests: read
+    branches: [main]
 
 jobs:
-  dco:
-    name: DCO Signed-Off
+  dco-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Get PR Commits
+        id: get-pr-commits
+        uses: actions/github-script@v6
         with:
-          fetch-depth: 0
-      - name: Check DCO sign-off
-        shell: bash
-        run: |
-          set -euo pipefail
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const query = `query($owner:String!, $repo:String!, $pull_number:Int!) {
+              repository(owner:$owner, name:$repo) {
+                pullRequest(number:$pull_number) {
+                  commits(first:100) {
+                    nodes {
+                      commit {
+                        oid
+                        message
+                      }
+                    }
+                  }
+                }
+              }
+            }`;
 
-          base_sha="${{ github.event.pull_request.base.sha }}"
-          head_sha="${{ github.event.pull_request.head.sha }}"
+            const variables = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            };
 
-          echo "Checking commits in range ${base_sha}..${head_sha}"
+            const result = await github.graphql(query, variables);
 
-          commits="$(git rev-list --no-merges "${base_sha}..${head_sha}")"
-          if [ -z "${commits}" ]; then
-            echo "No non-merge commits to validate."
-            exit 0
-          fi
+            const commits = result.repository.pullRequest.commits.nodes.map(node => node.commit);
 
-          missing=0
-          while IFS= read -r sha; do
-            if [ -z "${sha}" ]; then
-              continue
-            fi
-            author="$(git show -s --format='%an <%ae>' "${sha}")"
-            if git show -s --format='%B' "${sha}" | grep -Fiq "Signed-off-by: ${author}"; then
-              echo "OK: ${sha} (${author})"
-            else
-              echo "::error::Commit ${sha} is missing a matching Signed-off-by trailer for ${author}"
-              missing=1
-            fi
-          done <<< "${commits}"
+            const unsigned = commits.filter(commit => !commit.message.includes('Signed-off-by:'));
 
-          if [ "${missing}" -ne 0 ]; then
-            exit 1
-          fi
+            if (unsigned.length > 0) {
+              core.setFailed(`The following commits are not signed with DCO:\n${unsigned.map(c => c.oid).join('\n')}\n\nPlease sign your commits using 'git commit -s'.`);
+            } else {
+              console.log('All commits are signed with DCO!');
+            }
