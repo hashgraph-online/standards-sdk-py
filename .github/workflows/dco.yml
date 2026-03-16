@@ -19,4 +19,35 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check DCO sign-off
-        uses: tim-actions/dco@master
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+
+          echo "Checking commits in range ${base_sha}..${head_sha}"
+
+          commits="$(git rev-list --no-merges "${base_sha}..${head_sha}")"
+          if [ -z "${commits}" ]; then
+            echo "No non-merge commits to validate."
+            exit 0
+          fi
+
+          missing=0
+          while IFS= read -r sha; do
+            if [ -z "${sha}" ]; then
+              continue
+            fi
+            author="$(git show -s --format='%an <%ae>' "${sha}")"
+            if git show -s --format='%B' "${sha}" | grep -Fiq "Signed-off-by: ${author}"; then
+              echo "OK: ${sha} (${author})"
+            else
+              echo "::error::Commit ${sha} is missing a matching Signed-off-by trailer for ${author}"
+              missing=1
+            fi
+          done <<< "${commits}"
+
+          if [ "${missing}" -ne 0 ]; then
+            exit 1
+          fi
