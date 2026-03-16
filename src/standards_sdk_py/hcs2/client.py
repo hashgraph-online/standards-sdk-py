@@ -618,7 +618,7 @@ class Hcs2Client(HcsModuleClient):
         try:
             close_fn = getattr(self._hedera_client, "close", None)
             if self._hedera_client is not None and callable(close_fn):
-                cast(Any, self._hedera_client).close()
+                close_fn()
         except Exception as exc:
             raise TransportError(
                 "failed to close HCS-2 Hedera client",
