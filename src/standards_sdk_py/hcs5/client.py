@@ -88,6 +88,7 @@ class Hcs5Client(HcsModuleClient):
         *,
         operator_id: str,
         operator_key: str,
+        hedera_client: object | None = None,
         network: str = "testnet",
     ) -> None:
         config = SdkConfig.from_env()
@@ -98,7 +99,7 @@ class Hcs5Client(HcsModuleClient):
 
         self._network = _normalize_network(network)
         self._hedera: Any | None = None
-        self._hedera_client: Any | None = None
+        self._hedera_client: object | None = None
         self._operator_id: str | None = None
         self._operator_key: Any | None = None
         self._operator_key_string: str | None = None
@@ -109,9 +110,13 @@ class Hcs5Client(HcsModuleClient):
             raise ValidationError("operator_id is required", ErrorContext())
         if not cleaned_operator_key:
             raise ValidationError("operator_key is required", ErrorContext())
-        self._initialize_onchain(cleaned_operator_id, cleaned_operator_key)
+        self._initialize_onchain(
+            cleaned_operator_id, cleaned_operator_key, hedera_client=hedera_client
+        )
 
-    def _initialize_onchain(self, operator_id: str, operator_key: str) -> None:
+    def _initialize_onchain(
+        self, operator_id: str, operator_key: str, *, hedera_client: object | None = None
+    ) -> None:
         try:
             hedera = importlib.import_module("hedera")
         except ModuleNotFoundError as exc:
@@ -129,10 +134,11 @@ class Hcs5Client(HcsModuleClient):
                 ErrorContext(details={"reason": str(exc)}),
             ) from exc
 
-        client = (
+        client = hedera_client or (
             hedera.Client.forMainnet() if self._network == "mainnet" else hedera.Client.forTestnet()
         )
-        client.setOperator(account_id, private_key)
+        if hedera_client is None:
+            cast(Any, client).setOperator(account_id, private_key)
         self._hedera = hedera
         self._hedera_client = client
         self._operator_id = operator_id
@@ -305,6 +311,7 @@ class AsyncHcs5Client(AsyncHcsModuleClient):
         *,
         operator_id: str,
         operator_key: str,
+        hedera_client: object | None = None,
         network: str = "testnet",
     ) -> None:
         config = SdkConfig.from_env()
@@ -319,6 +326,7 @@ class AsyncHcs5Client(AsyncHcsModuleClient):
             ),
             operator_id=operator_id,
             operator_key=operator_key,
+            hedera_client=hedera_client,
             network=network,
         )
 

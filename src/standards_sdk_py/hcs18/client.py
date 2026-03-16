@@ -86,6 +86,7 @@ class Hcs18Client(HcsModuleClient):
         *,
         operator_id: str,
         operator_key: str,
+        hedera_client: object | None = None,
         network: str = "testnet",
         key_type: str | None = None,
     ) -> None:
@@ -97,7 +98,7 @@ class Hcs18Client(HcsModuleClient):
 
         self._network = _normalize_network(network)
         self._hedera: Any | None = None
-        self._hedera_client: Any | None = None
+        self._hedera_client: object | None = None
         self._operator_key: Any | None = None
         self._key_type: str | None = None
 
@@ -107,10 +108,20 @@ class Hcs18Client(HcsModuleClient):
             raise ValidationError("operator_id is required", ErrorContext())
         if not cleaned_operator_key:
             raise ValidationError("operator_key is required", ErrorContext())
-        self._initialize_onchain(cleaned_operator_id, cleaned_operator_key, key_type=key_type)
+        self._initialize_onchain(
+            cleaned_operator_id,
+            cleaned_operator_key,
+            key_type=key_type,
+            hedera_client=hedera_client,
+        )
 
     def _initialize_onchain(
-        self, operator_id: str, operator_key: str, *, key_type: str | None
+        self,
+        operator_id: str,
+        operator_key: str,
+        *,
+        key_type: str | None,
+        hedera_client: object | None = None,
     ) -> None:
         try:
             hedera = importlib.import_module("hedera")
@@ -129,10 +140,11 @@ class Hcs18Client(HcsModuleClient):
                 ErrorContext(details={"reason": str(exc)}),
             ) from exc
 
-        client = (
+        client = hedera_client or (
             hedera.Client.forMainnet() if self._network == "mainnet" else hedera.Client.forTestnet()
         )
-        client.setOperator(account_id, private_key)
+        if hedera_client is None:
+            cast(Any, client).setOperator(account_id, private_key)
         self._hedera = hedera
         self._hedera_client = client
         self._operator_key = private_key
@@ -326,6 +338,7 @@ class AsyncHcs18Client(AsyncHcsModuleClient):
         *,
         operator_id: str,
         operator_key: str,
+        hedera_client: object | None = None,
         network: str = "testnet",
         key_type: str | None = None,
     ) -> None:
@@ -341,6 +354,7 @@ class AsyncHcs18Client(AsyncHcsModuleClient):
             ),
             operator_id=operator_id,
             operator_key=operator_key,
+            hedera_client=hedera_client,
             network=network,
             key_type=key_type,
         )
