@@ -163,6 +163,7 @@ class Hcs2Client(HcsModuleClient):
         *,
         operator_id: str,
         operator_key: str,
+        hedera_client: object | None = None,
         network: str = "testnet",
         mirror_base_url: str | None = None,
         key_type: str | None = None,
@@ -186,7 +187,7 @@ class Hcs2Client(HcsModuleClient):
         self._registry_type_cache: dict[str, Hcs2RegistryType] = {}
 
         self._hedera: Any | None = None
-        self._hedera_client: Any | None = None
+        self._hedera_client: object | None = None
         self._operator_id: str | None = None
         self._operator_key: Any | None = None
         self._key_type: str | None = None
@@ -197,10 +198,20 @@ class Hcs2Client(HcsModuleClient):
             raise ValidationError("operator_id is required", ErrorContext())
         if not cleaned_operator_key:
             raise ValidationError("operator_key is required", ErrorContext())
-        self._initialize_onchain(cleaned_operator_id, cleaned_operator_key, key_type=key_type)
+        self._initialize_onchain(
+            cleaned_operator_id,
+            cleaned_operator_key,
+            key_type=key_type,
+            hedera_client=hedera_client,
+        )
 
     def _initialize_onchain(
-        self, operator_id: str, operator_key: str, *, key_type: str | None
+        self,
+        operator_id: str,
+        operator_key: str,
+        *,
+        key_type: str | None,
+        hedera_client: object | None = None,
     ) -> None:
         try:
             hedera = importlib.import_module("hedera")
@@ -225,10 +236,11 @@ class Hcs2Client(HcsModuleClient):
                 ErrorContext(details={"reason": str(exc)}),
             ) from exc
 
-        client = (
+        client = hedera_client or (
             hedera.Client.forMainnet() if self._network == "mainnet" else hedera.Client.forTestnet()
         )
-        client.setOperator(account_id, private_key)
+        if hedera_client is None:
+            cast(Any, client).setOperator(account_id, private_key)
 
         resolved_key_type = _clean(key_type).lower()
         if resolved_key_type:
@@ -606,7 +618,7 @@ class Hcs2Client(HcsModuleClient):
         try:
             close_fn = getattr(self._hedera_client, "close", None)
             if self._hedera_client is not None and callable(close_fn):
-                self._hedera_client.close()
+                close_fn()
         except Exception as exc:
             raise TransportError(
                 "failed to close HCS-2 Hedera client",
@@ -773,6 +785,7 @@ class AsyncHcs2Client(AsyncHcsModuleClient):
         *,
         operator_id: str,
         operator_key: str,
+        hedera_client: object | None = None,
         network: str = "testnet",
         mirror_base_url: str | None = None,
         key_type: str | None = None,
@@ -790,6 +803,7 @@ class AsyncHcs2Client(AsyncHcsModuleClient):
             ),
             operator_id=operator_id,
             operator_key=operator_key,
+            hedera_client=hedera_client,
             network=network,
             mirror_base_url=mirror_base_url,
             key_type=key_type,
