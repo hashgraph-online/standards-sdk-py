@@ -89,9 +89,15 @@ jobs:
         if: env.ANACONDA_API_TOKEN != ''
         shell: bash -el {0}
         run: |
+          shopt -s nullglob
+          packages=(conda-dist/*.conda conda-dist/*.tar.bz2)
+          if [ ${#packages[@]} -eq 0 ]; then
+            echo "No conda package artifacts found in conda-dist/"
+            exit 1
+          fi
           anaconda \
             --token "${ANACONDA_API_TOKEN}" \
-            upload conda-dist/* \
+            upload "${packages[@]}" \
             --user "${ANACONDA_OWNER}" \
             --label main \
             --skip-existing
