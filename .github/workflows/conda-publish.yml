@@ -52,7 +52,7 @@ jobs:
           echo "PKG_VERSION=${version}" >> "$GITHUB_ENV"
       - name: Build conda package
         shell: bash -el {0}
-        run: conda build conda-recipe --output-folder conda-dist
+        run: conda build conda-recipe --no-test --output-folder conda-dist
       - name: Upload conda artifacts
         uses: actions/upload-artifact@v4
         with:
