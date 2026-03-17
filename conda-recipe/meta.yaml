@@ -1,4 +1,4 @@
-{% set version = environ.get("PKG_VERSION", "0.1.1") %}
+{% set version = environ.get("PKG_VERSION") or "0.1.1" %}
 
 package:
   name: standards-sdk-py
@@ -20,7 +20,6 @@ requirements:
   run:
     - python >=3.11
     - httpx >=0.27.2,<1.0.0
-    - hedera-sdk-py >=2.50.0,<3.0.0
     - pydantic >=2.10.0,<3.0.0
     - typing-extensions >=4.12.2,<5.0.0
 

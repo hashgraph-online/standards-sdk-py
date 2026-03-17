@@ -63,27 +63,30 @@ jobs:
   publish-anaconda:
     name: Publish to Anaconda
     needs: build-conda
-    if: secrets.ANACONDA_API_TOKEN != ''
     runs-on: ubuntu-latest
     env:
       ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       ANACONDA_OWNER: hashgraph-online
     steps:
       - uses: conda-incubator/setup-miniconda@v3
+        if: env.ANACONDA_API_TOKEN != ''
         with:
           auto-update-conda: true
           activate-environment: conda-publish
           miniforge-variant: Miniforge3
           python-version: "3.11"
       - name: Install anaconda client
+        if: env.ANACONDA_API_TOKEN != ''
         shell: bash -el {0}
         run: conda install -y anaconda-client
       - name: Download built package
+        if: env.ANACONDA_API_TOKEN != ''
         uses: actions/download-artifact@v4
         with:
           name: standards-sdk-py-conda-${{ needs.build-conda.outputs.version }}
           path: conda-dist
       - name: Upload package to anaconda.org
+        if: env.ANACONDA_API_TOKEN != ''
         shell: bash -el {0}
         run: |
           anaconda \
@@ -92,3 +95,6 @@ jobs:
             --user "${ANACONDA_OWNER}" \
             --label main \
             --skip-existing
+      - name: Skip publish when token is not configured
+        if: env.ANACONDA_API_TOKEN == ''
+        run: echo "ANACONDA_API_TOKEN is not configured; skipping Anaconda publish."
