@@ -28,7 +28,7 @@ test:
   imports:
     - standards_sdk_py
   commands:
-    - python -m pip install --no-deps "hedera-sdk-py>=2.50.0,<3.0.0"
+    - python -m pip install "hedera-sdk-py>=2.50.0,<3.0.0"
     - pip check
   requires:
     - pip
