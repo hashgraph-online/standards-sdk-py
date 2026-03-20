@@ -13,9 +13,7 @@ import math
 import re
 import time
 from collections.abc import Callable, Mapping, Sequence
-from importlib import import_module
 from typing import Any, cast
-from urllib.parse import unquote_to_bytes
 
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
@@ -54,7 +52,6 @@ _DEFAULT_MIRROR_BY_NETWORK = {
 _ONCHAIN_CREDS_ERROR = "on-chain operator credentials are not configured"
 _HCS1_URI_RE = re.compile(r"^hcs://1/(\d+\.\d+\.\d+)$")
 _MAX_MESSAGE_MEMO_CHARS = 299
-_brotli = import_module("brotli")
 
 
 def _clean(value: object | None) -> str:
@@ -313,6 +310,7 @@ class Hcs27Client(HcsModuleClient):
         hedera_client: object | None = None,
         network: str = "testnet",
         mirror_base_url: str | None = None,
+        cdn_base_url: str | None = None,
         mirror_client: MirrorNodeClient | None = None,
     ) -> None:
         config = SdkConfig.from_env()
@@ -329,7 +327,12 @@ class Hcs27Client(HcsModuleClient):
         self._mirror_client = mirror_client or MirrorNodeClient(
             transport=SyncHttpTransport(base_url=resolved_mirror_base),
         )
-        self._hrl_transport = SyncHttpTransport(base_url=_DEFAULT_KILOSCRIBE_CDN_ENDPOINT)
+        resolved_cdn_base = (
+            cdn_base_url.strip()
+            if isinstance(cdn_base_url, str) and cdn_base_url.strip()
+            else _DEFAULT_KILOSCRIBE_CDN_ENDPOINT
+        )
+        self._hrl_transport = SyncHttpTransport(base_url=resolved_cdn_base)
         self._hedera: Any | None = None
         self._hedera_client: object | None = None
         self._operator_id = _clean(operator_id)
@@ -742,15 +745,7 @@ class Hcs27Client(HcsModuleClient):
         return cast(JsonValue, result.model_dump(by_alias=True))
 
     def getCheckpoints(self, *args: object, **kwargs: object) -> JsonValue:
-        if len(args) > 2:
-            raise ValidationError(
-                "getCheckpoints expects at most two positional arguments",
-                ErrorContext(),
-            )
-        topic_id = _clean(args[0] if args else kwargs.get("topicId", kwargs.get("topic_id")))
-        if not topic_id:
-            raise ValidationError("topicId is required", ErrorContext())
-        resolver = self._extract_resolver(args, kwargs)
+        topic_id, resolver = self._parse_get_checkpoints_inputs(args, kwargs)
         try:
             items = self._fetch_topic_messages(topic_id)
         except Exception as exc:
@@ -762,13 +757,46 @@ class Hcs27Client(HcsModuleClient):
         for item in items:
             try:
                 payload = base64.b64decode(item.message).decode("utf-8")
+            except Exception as exc:
+                raise ParseError(
+                    "failed to decode HCS-27 checkpoint message payload",
+                    ErrorContext(
+                        details={
+                            "topic_id": topic_id,
+                            "sequence_number": item.sequence_number,
+                            "reason": str(exc),
+                        }
+                    ),
+                ) from exc
+            try:
                 raw_message = json.loads(payload)
+            except Exception as exc:
+                raise ParseError(
+                    "failed to parse HCS-27 checkpoint message JSON",
+                    ErrorContext(
+                        details={
+                            "topic_id": topic_id,
+                            "sequence_number": item.sequence_number,
+                            "reason": str(exc),
+                        }
+                    ),
+                ) from exc
+            try:
                 metadata_payload = cast(
                     dict[str, object],
                     self.validateCheckpointMessage(message=raw_message, resolver=resolver),
                 )
-            except Exception:
-                continue
+            except Exception as exc:
+                raise ParseError(
+                    "failed to validate HCS-27 checkpoint message",
+                    ErrorContext(
+                        details={
+                            "topic_id": topic_id,
+                            "sequence_number": item.sequence_number,
+                            "reason": str(exc),
+                        }
+                    ),
+                ) from exc
             effective_metadata = Hcs27CheckpointMetadata.model_validate(metadata_payload)
             record = Hcs27CheckpointRecord(
                 topicId=topic_id,
@@ -897,6 +925,7 @@ class Hcs27Client(HcsModuleClient):
                 mimeType="application/json",
             ),
             InscribeViaRegistryBrokerOptions(
+                base_url=self.transport.base_url,
                 ledger_account_id=self._operator_id,
                 ledger_private_key=self._operator_key_raw,
                 ledger_network=self._network,
@@ -1019,127 +1048,6 @@ class Hcs27Client(HcsModuleClient):
             and base64.b64encode(sr).decode("utf-8") == new_root_b64
         )
 
-    def _decode_hcs1_payload_from_messages(
-        self,
-        reference: str,
-        message: MirrorTopicMessage,
-        topic_messages: list[MirrorTopicMessage],
-    ) -> bytes:
-        payload = self._decode_message_data(message)
-        chunk_info = self._chunk_info(message)
-        if chunk_info is None or _coerce_int(chunk_info.get("total", 0)) <= 1:
-            return self._normalize_hcs1_payload(payload)
-        chunk_total = _coerce_int(chunk_info.get("total", 0))
-        chunk_transaction_id = self._extract_chunk_transaction_id(
-            chunk_info.get("initial_transaction_id")
-        )
-        if not chunk_transaction_id:
-            raise ParseError(
-                "chunked HCS-1 payload is missing initial transaction ID",
-                ErrorContext(details={"reference": reference}),
-            )
-        chunks: dict[int, bytes] = {}
-        for topic_message in topic_messages:
-            topic_chunk_info = self._chunk_info(topic_message)
-            if topic_chunk_info is None:
-                continue
-            if _coerce_int(topic_chunk_info.get("total", 0)) != chunk_total:
-                continue
-            if (
-                self._extract_chunk_transaction_id(topic_chunk_info.get("initial_transaction_id"))
-                != chunk_transaction_id
-            ):
-                continue
-            chunk_number = _coerce_int(topic_chunk_info.get("number", 0))
-            if chunk_number <= 0:
-                continue
-            chunks[chunk_number] = self._decode_message_data(topic_message)
-        if len(chunks) != chunk_total:
-            raise ParseError(
-                "chunked HCS-1 payload is incomplete",
-                ErrorContext(
-                    details={
-                        "reference": reference,
-                        "expected": chunk_total,
-                        "found": len(chunks),
-                    }
-                ),
-            )
-        combined = bytearray()
-        for expected in range(1, chunk_total + 1):
-            if expected not in chunks:
-                raise ParseError(
-                    "chunked HCS-1 payload is missing a chunk",
-                    ErrorContext(details={"reference": reference, "chunk": expected}),
-                )
-            combined.extend(chunks[expected])
-        return self._normalize_hcs1_payload(bytes(combined))
-
-    def _decode_message_data(self, message: MirrorTopicMessage) -> bytes:
-        try:
-            return base64.b64decode(message.message)
-        except Exception as exc:
-            raise ParseError(
-                "failed to decode mirror topic message",
-                ErrorContext(
-                    details={
-                        "sequence_number": message.sequence_number,
-                        "reason": str(exc),
-                    }
-                ),
-            ) from exc
-
-    def _chunk_info(self, message: MirrorTopicMessage) -> dict[str, object] | None:
-        extras = message.model_extra or {}
-        chunk_info = extras.get("chunk_info")
-        if isinstance(chunk_info, dict):
-            return {str(key): cast(object, value) for key, value in chunk_info.items()}
-        return None
-
-    def _normalize_hcs1_payload(self, payload: bytes) -> bytes:
-        trimmed = payload.strip()
-        if not trimmed.startswith(b"{") or b'"c"' not in trimmed:
-            return payload
-        try:
-            wrapped = json.loads(trimmed.decode("utf-8"))
-        except Exception:
-            return payload
-        content = wrapped.get("c")
-        if not isinstance(content, str) or not content.strip().startswith("data:"):
-            return payload
-        decoded = self._decode_data_url_payload(content)
-        try:
-            decompressed = cast(bytes, _brotli.decompress(decoded))
-        except Exception:
-            return decoded
-        return decompressed or decoded
-
-    def _decode_data_url_payload(self, value: str) -> bytes:
-        header, sep, data = value.partition(",")
-        if sep != ",":
-            raise ParseError("invalid wrapped HCS-1 data URL", ErrorContext())
-        if ";base64" in header.lower():
-            try:
-                return base64.b64decode(data)
-            except Exception as exc:
-                raise ParseError(
-                    "failed to decode wrapped HCS-1 base64 payload",
-                    ErrorContext(details={"reason": str(exc)}),
-                ) from exc
-        return unquote_to_bytes(data)
-
-    def _extract_chunk_transaction_id(self, value: object) -> str:
-        if isinstance(value, str):
-            return value.strip()
-        if isinstance(value, Mapping):
-            account_id = _clean(value.get("account_id"))
-            valid_start = _clean(
-                value.get("transaction_valid_start", value.get("valid_start_timestamp"))
-            )
-            if account_id and valid_start:
-                return f"{account_id}@{valid_start}"
-        return ""
-
     def _coerce_extra_string(
         self,
         message: MirrorTopicMessage,
@@ -1207,6 +1115,37 @@ class Hcs27Client(HcsModuleClient):
         if not callable(resolver):
             raise ValidationError("resolver must be callable", ErrorContext())
         return cast(Callable[[str], bytes], resolver)
+
+    def _parse_get_checkpoints_inputs(
+        self,
+        args: tuple[object, ...],
+        kwargs: Mapping[str, object],
+    ) -> tuple[str, Callable[[str], bytes]]:
+        if len(args) > 2:
+            raise ValidationError(
+                "getCheckpoints expects at most two positional arguments",
+                ErrorContext(),
+            )
+        options = (
+            cast(Mapping[str, object], args[0])
+            if len(args) == 1 and isinstance(args[0], Mapping)
+            else None
+        )
+        topic_id = _clean(
+            options.get("topicId", options.get("topic_id"))
+            if options is not None
+            else (args[0] if args else kwargs.get("topicId", kwargs.get("topic_id")))
+        )
+        if not topic_id:
+            raise ValidationError("topicId is required", ErrorContext())
+        resolver_args = args if options is None else (cast(object, options),)
+        resolver = self._extract_resolver(resolver_args, kwargs)
+        if len(args) == 2:
+            explicit_resolver = args[1]
+            if not callable(explicit_resolver):
+                raise ValidationError("resolver must be callable", ErrorContext())
+            resolver = cast(Callable[[str], bytes], explicit_resolver)
+        return topic_id, resolver
 
     def _extract_records_payload(
         self,
@@ -1350,6 +1289,7 @@ class AsyncHcs27Client(AsyncHcsModuleClient):
         hedera_client: object | None = None,
         network: str = "testnet",
         mirror_base_url: str | None = None,
+        cdn_base_url: str | None = None,
         mirror_client: MirrorNodeClient | None = None,
     ) -> None:
         config = SdkConfig.from_env()
@@ -1367,6 +1307,7 @@ class AsyncHcs27Client(AsyncHcsModuleClient):
             hedera_client=hedera_client,
             network=network,
             mirror_base_url=mirror_base_url,
+            cdn_base_url=cdn_base_url,
             mirror_client=mirror_client,
         )
 

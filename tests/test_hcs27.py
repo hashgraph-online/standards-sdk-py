@@ -6,8 +6,9 @@ import json
 
 import pytest
 
-from standards_sdk_py.exceptions import TransportError, ValidationError
+from standards_sdk_py.exceptions import ParseError, TransportError, ValidationError
 from standards_sdk_py.hcs27 import AsyncHCS27Client, HCS27Client
+from standards_sdk_py.hcs27 import client as hcs27_client_module
 
 
 def _client() -> HCS27Client:
@@ -239,6 +240,11 @@ def test_hcs27_resolve_hcs1_reference_uses_kiloscribe_cdn() -> None:
     assert resolved == b'{"type":"ans-checkpoint-v1"}'
 
 
+def test_hcs27_accepts_custom_cdn_base_url() -> None:
+    client = HCS27Client(cdn_base_url="https://cdn.example.com/hcs")
+    assert client._hrl_transport.base_url == "https://cdn.example.com/hcs"
+
+
 def test_hcs27_get_checkpoints_wraps_mirror_failures() -> None:
     client = _client()
     client._mirror_client = type(
@@ -294,6 +300,57 @@ def test_hcs27_get_checkpoints_paginates_via_collect_items() -> None:
         "stream-a",
         "stream-b",
     ]
+
+
+def test_hcs27_get_checkpoints_accepts_single_options_mapping() -> None:
+    client = _client()
+    metadata = _valid_metadata("stream-a")
+    encoded = base64.b64encode(
+        json.dumps({"p": "hcs-27", "op": "register", "metadata": metadata}).encode("utf-8")
+    ).decode("utf-8")
+
+    class Mirror:
+        def get_topic_messages(self, topic_id: str, order: str = "asc") -> dict[str, object]:
+            assert topic_id == "0.0.777"
+            assert order == "asc"
+            return {
+                "messages": [
+                    {
+                        "consensus_timestamp": "1.1",
+                        "message": encoded,
+                        "sequence_number": 1,
+                    }
+                ],
+                "links": {"next": None},
+            }
+
+    client._mirror_client = Mirror()
+    records = client.get_checkpoints({"topicId": "0.0.777"})
+    assert isinstance(records, list)
+    assert records[0]["topicId"] == "0.0.777"
+
+
+def test_hcs27_get_checkpoints_raises_on_invalid_message_payload() -> None:
+    client = _client()
+
+    class Mirror:
+        def get_topic_messages(self, topic_id: str, order: str = "asc") -> dict[str, object]:
+            _ = (topic_id, order)
+            return {
+                "messages": [
+                    {
+                        "consensus_timestamp": "1.1",
+                        "message": "%%%not-base64%%%",
+                        "sequence_number": 9,
+                    }
+                ],
+                "links": {"next": None},
+            }
+
+    client._mirror_client = Mirror()
+
+    with pytest.raises(ParseError, match="failed to decode HCS-27 checkpoint message payload"):
+        client.get_checkpoints("0.0.123")
 
 
 def test_hcs27_publish_checkpoint_uses_utf8_json_submit_bytes() -> None:
@@ -451,6 +508,30 @@ def test_hcs27_publish_metadata_hcs1_requires_inscriber_credentials() -> None:
         match="operator credentials are required for inscriber-backed HCS-1 overflow publication",
     ):
         client._publish_metadata_hcs1(metadata_bytes)
+
+
+def test_hcs27_publish_metadata_hcs1_uses_configured_broker_base_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = HCS27Client(
+        transport=type("Transport", (), {"base_url": "https://broker.example.com"})()
+    )
+    client._operator_id = "0.0.123"
+    client._operator_key_raw = "test-private-key"
+    metadata_bytes = json.dumps(_valid_metadata(), separators=(",", ":")).encode("utf-8")
+    captured: dict[str, object] = {}
+
+    def fake_inscribe(input_payload: object, options: object) -> object:
+        captured["input"] = input_payload
+        captured["options"] = options
+        return type("Result", (), {"topic_id": "0.0.500", "confirmed": True})()
+
+    monkeypatch.setattr(hcs27_client_module, "inscribe", fake_inscribe)
+
+    reference, digest = client._publish_metadata_hcs1(metadata_bytes)
+    assert reference == "hcs://1/0.0.500"
+    assert digest
+    assert captured["options"].base_url == "https://broker.example.com"
 
 
 def test_async_hcs27_client_accepts_mirror_client() -> None:
