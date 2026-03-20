@@ -53,9 +53,7 @@ _DEFAULT_MIRROR_BY_NETWORK = {
 _ONCHAIN_CREDS_ERROR = "on-chain operator credentials are not configured"
 _HCS1_URI_RE = re.compile(r"^hcs://1/(\d+\.\d+\.\d+)$")
 _MAX_MESSAGE_MEMO_CHARS = 299
-_MAX_HCS1_REFERENCE = (
-    "hcs://1/9223372036854775807.9223372036854775807.9223372036854775807"
-)
+_MAX_HCS1_REFERENCE = "hcs://1/9223372036854775807.9223372036854775807.9223372036854775807"
 
 
 def _clean(value: object | None) -> str:
@@ -987,9 +985,7 @@ class Hcs27Client(HcsModuleClient):
         if not topic_id:
             raw_inscription = getattr(result, "inscription", None)
             if isinstance(raw_inscription, Mapping):
-                topic_id = _clean(
-                    raw_inscription.get("topicId", raw_inscription.get("topic_id"))
-                )
+                topic_id = _clean(raw_inscription.get("topicId", raw_inscription.get("topic_id")))
             else:
                 topic_id = _clean(
                     getattr(raw_inscription, "topic_id", None)
