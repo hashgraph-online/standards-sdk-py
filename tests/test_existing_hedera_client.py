@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from standards_sdk_py.hcs2.client import Hcs2Client
+from standards_sdk_py.hcs27.client import Hcs27Client
 from standards_sdk_py.shared.http import SyncHttpTransport
 
 
@@ -78,3 +79,35 @@ def test_hcs2_uses_injected_hedera_client(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert client._hedera_client is injected_client
     assert calls == {"for_mainnet": 0, "for_testnet": 0}
+
+
+def test_hcs27_uses_injected_client_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_client_cls = type(
+        "Client",
+        (),
+        {
+            "forMainnet": staticmethod(lambda: object()),
+            "forTestnet": staticmethod(lambda: object()),
+        },
+    )
+    fake_hedera = SimpleNamespace(
+        AccountId=type("AccountId", (), {"fromString": staticmethod(lambda value: value)}),
+        PrivateKey=type("PrivateKey", (), {"fromString": staticmethod(lambda value: value)}),
+        Client=fake_client_cls,
+    )
+    monkeypatch.setattr(
+        "standards_sdk_py.hcs27.client.importlib",
+        SimpleNamespace(import_module=lambda _: fake_hedera),
+    )
+
+    injected_client = SimpleNamespace(network_name="mainnet")
+    client = Hcs27Client(
+        transport=SyncHttpTransport(base_url="https://example.invalid"),
+        hedera_client=injected_client,
+        network="testnet",
+    )
+
+    assert client._network == "mainnet"
+    assert client._mirror_client._transport.base_url == (
+        "https://mainnet-public.mirrornode.hedera.com/api/v1"
+    )

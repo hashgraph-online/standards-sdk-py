@@ -53,6 +53,7 @@ _DEFAULT_MIRROR_BY_NETWORK = {
     "testnet": "https://testnet.mirrornode.hedera.com/api/v1",
 }
 _DEFAULT_REGISTRY_BROKER_BASE_URL = "https://registry.hashgraphonline.com"
+_DEFAULT_INSCRIBER_BASE_URL = "https://v2-api.tier.bot/api"
 _DEFAULT_TTL = 86400
 _MIN_TTL = 3600
 
@@ -706,7 +707,7 @@ class Hcs6Client(HcsModuleClient):
         opts = dict(inscription_options or {})
         broker_options = InscribeViaRegistryBrokerOptions(
             base_url=str(
-                opts.get("baseUrl") or opts.get("base_url") or _DEFAULT_REGISTRY_BROKER_BASE_URL
+                opts.get("baseUrl") or opts.get("base_url") or _DEFAULT_INSCRIBER_BASE_URL
             ),
             api_key=cast(str | None, opts.get("apiKey") or opts.get("api_key")),
             ledger_api_key=cast(str | None, opts.get("ledgerApiKey") or opts.get("ledger_api_key")),

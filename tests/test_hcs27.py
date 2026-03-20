@@ -111,6 +111,11 @@ def test_hcs27_validate_checkpoint_message_rejects_300_char_memo() -> None:
         )
 
 
+def test_hcs27_canonicalize_json_uses_ecmascript_float_rendering() -> None:
+    canonical = hcs27_client_module._canonicalize_json({"value": 333333333.33333329})
+    assert canonical == b'{"value":333333333.3333333}'
+
+
 def test_hcs27_validate_checkpoint_message_resolves_hcs1_reference() -> None:
     client = _client()
     metadata = _valid_metadata()
@@ -221,7 +226,7 @@ def test_hcs27_resolve_hcs1_reference_reads_raw_cdn_payload() -> None:
     assert resolved == original
 
 
-def test_hcs27_resolve_hcs1_reference_uses_kiloscribe_cdn() -> None:
+def test_hcs27_resolve_hcs1_reference_uses_inscription_cdn() -> None:
     client = _client()
     client._hrl_transport = type(
         "Transport",
@@ -243,6 +248,43 @@ def test_hcs27_resolve_hcs1_reference_uses_kiloscribe_cdn() -> None:
 def test_hcs27_accepts_custom_cdn_base_url() -> None:
     client = HCS27Client(cdn_base_url="https://cdn.example.com/hcs")
     assert client._hrl_transport.base_url == "https://cdn.example.com/hcs"
+
+
+def test_hcs27_publish_checkpoint_validates_overflow_message_before_inscribing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[object] = []
+
+    def _inscribe(*args: object, **kwargs: object) -> object:
+        calls.append((args, kwargs))
+        raise AssertionError("inscribe should not be called for an invalid overflow message")
+
+    monkeypatch.setattr(hcs27_client_module, "inscribe", _inscribe)
+
+    client = _client()
+    client._hedera = object()
+    client._hedera_client = object()
+    client._operator_id = "0.0.1001"
+    client._operator_key_raw = (
+        "302e020100300506032b6570042204200123456789abcdef0123456789abcdef"
+        "0123456789abcdef0123456789abcdef"
+    )
+
+    metadata = {
+        "type": "ans-checkpoint-v1",
+        "stream": {"registry": "ans", "log_id": "overflow"},
+        "log": {
+            "alg": "sha-256",
+            "leaf": "sha256(jcs(event))-" * 90,
+            "merkle": "rfc9162",
+        },
+        "root": {"treeSize": "1", "rootHashB64u": _root_hash_b64u("overflow")},
+    }
+
+    with pytest.raises(ValidationError, match="message memo must be at most 299 characters"):
+        client.publish_checkpoint("0.0.123", metadata, "x" * 300)
+
+    assert calls == []
 
 
 def test_hcs27_get_checkpoints_wraps_mirror_failures() -> None:
@@ -510,12 +552,10 @@ def test_hcs27_publish_metadata_hcs1_requires_inscriber_credentials() -> None:
         client._publish_metadata_hcs1(metadata_bytes)
 
 
-def test_hcs27_publish_metadata_hcs1_uses_configured_broker_base_url(
+def test_hcs27_publish_metadata_hcs1_uses_configured_inscriber_base_url(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    client = HCS27Client(
-        transport=type("Transport", (), {"base_url": "https://broker.example.com"})()
-    )
+    client = HCS27Client(inscriber_base_url="https://inscriber.example.com/api")
     client._operator_id = "0.0.123"
     client._operator_key_raw = "test-private-key"
     metadata_bytes = json.dumps(_valid_metadata(), separators=(",", ":")).encode("utf-8")
@@ -524,14 +564,18 @@ def test_hcs27_publish_metadata_hcs1_uses_configured_broker_base_url(
     def fake_inscribe(input_payload: object, options: object) -> object:
         captured["input"] = input_payload
         captured["options"] = options
-        return type("Result", (), {"topic_id": "0.0.500", "confirmed": True})()
+        return type(
+            "Result",
+            (),
+            {"result": {"topicId": "0.0.500"}, "inscription": None, "confirmed": True},
+        )()
 
     monkeypatch.setattr(hcs27_client_module, "inscribe", fake_inscribe)
 
     reference, digest = client._publish_metadata_hcs1(metadata_bytes)
     assert reference == "hcs://1/0.0.500"
     assert digest
-    assert captured["options"].base_url == "https://broker.example.com"
+    assert captured["options"].base_url == "https://inscriber.example.com/api"
 
 
 def test_async_hcs27_client_accepts_mirror_client() -> None:

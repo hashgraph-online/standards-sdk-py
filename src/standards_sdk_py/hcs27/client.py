@@ -44,7 +44,8 @@ from standards_sdk_py.shared.http import AsyncHttpTransport, SyncHttpTransport
 from standards_sdk_py.shared.types import JsonObject, JsonValue
 
 _DEFAULT_REGISTRY_BROKER_BASE_URL = "https://registry.hashgraphonline.com"
-_DEFAULT_KILOSCRIBE_CDN_ENDPOINT = "https://kiloscribe.com/api/inscription-cdn"
+_DEFAULT_INSCRIPTION_CDN_ENDPOINT = "https://kiloscribe.com/api/inscription-cdn"
+_DEFAULT_INSCRIBER_API_BASE_URL = "https://v2-api.tier.bot/api"
 _DEFAULT_MIRROR_BY_NETWORK = {
     "mainnet": "https://mainnet-public.mirrornode.hedera.com/api/v1",
     "testnet": "https://testnet.mirrornode.hedera.com/api/v1",
@@ -52,12 +53,41 @@ _DEFAULT_MIRROR_BY_NETWORK = {
 _ONCHAIN_CREDS_ERROR = "on-chain operator credentials are not configured"
 _HCS1_URI_RE = re.compile(r"^hcs://1/(\d+\.\d+\.\d+)$")
 _MAX_MESSAGE_MEMO_CHARS = 299
+_MAX_HCS1_REFERENCE = (
+    "hcs://1/9223372036854775807.9223372036854775807.9223372036854775807"
+)
 
 
 def _clean(value: object | None) -> str:
     if not isinstance(value, str):
         return ""
     return value.strip()
+
+
+def _extract_client_network(candidate: object | None) -> str | None:
+    if candidate is None:
+        return None
+    raw_value = candidate
+    for attribute in ("ledger_id", "ledgerId", "network_name", "networkName"):
+        value = getattr(candidate, attribute, None)
+        if value is not None:
+            raw_value = value
+            break
+    if callable(raw_value):
+        try:
+            raw_value = raw_value()
+        except TypeError:
+            return None
+    if isinstance(raw_value, str):
+        trimmed = raw_value.strip()
+        return trimmed or None
+    for method_name in ("to_string", "toString"):
+        method = getattr(raw_value, method_name, None)
+        if callable(method):
+            rendered = method()
+            if isinstance(rendered, str) and rendered.strip():
+                return rendered.strip()
+    return None
 
 
 def _normalize_network(raw_network: str) -> str:
@@ -206,10 +236,11 @@ def _normalize_json_value(value: object) -> object:
 
 
 def _format_json_float(value: float) -> str:
-    rendered = format(value, ".17g")
-    if rendered == "-0":
+    if value == 0:
         return "0"
-    return rendered
+    if value.is_integer():
+        return str(int(value))
+    return json.dumps(value, ensure_ascii=False, allow_nan=False)
 
 
 def _write_canonical_json(value: object) -> str:
@@ -311,6 +342,7 @@ class Hcs27Client(HcsModuleClient):
         network: str = "testnet",
         mirror_base_url: str | None = None,
         cdn_base_url: str | None = None,
+        inscriber_base_url: str | None = None,
         mirror_client: MirrorNodeClient | None = None,
     ) -> None:
         config = SdkConfig.from_env()
@@ -318,7 +350,8 @@ class Hcs27Client(HcsModuleClient):
             base_url=config.network.registry_broker_base_url or _DEFAULT_REGISTRY_BROKER_BASE_URL,
         )
         super().__init__("hcs27", resolved_transport)
-        self._network = _normalize_network(network)
+        resolved_network = _extract_client_network(hedera_client) or network
+        self._network = _normalize_network(resolved_network)
         resolved_mirror_base = (
             mirror_base_url.strip()
             if isinstance(mirror_base_url, str) and mirror_base_url.strip()
@@ -330,9 +363,14 @@ class Hcs27Client(HcsModuleClient):
         resolved_cdn_base = (
             cdn_base_url.strip()
             if isinstance(cdn_base_url, str) and cdn_base_url.strip()
-            else _DEFAULT_KILOSCRIBE_CDN_ENDPOINT
+            else _DEFAULT_INSCRIPTION_CDN_ENDPOINT
         )
         self._hrl_transport = SyncHttpTransport(base_url=resolved_cdn_base)
+        self._inscriber_base_url = (
+            inscriber_base_url.strip()
+            if isinstance(inscriber_base_url, str) and inscriber_base_url.strip()
+            else _DEFAULT_INSCRIBER_API_BASE_URL
+        )
         self._hedera: Any | None = None
         self._hedera_client: object | None = None
         self._operator_id = _clean(operator_id)
@@ -876,9 +914,20 @@ class Hcs27Client(HcsModuleClient):
         encoded = _encode_json_bytes(payload)
         if len(encoded) <= 1024:
             return payload, None
-        reference, digest = self._publish_metadata_hcs1(
-            _encode_json_bytes(metadata.model_dump(by_alias=True, exclude_none=True))
+        inline_metadata = _encode_json_bytes(metadata.model_dump(by_alias=True, exclude_none=True))
+        provisional_message = Hcs27CheckpointMessage(
+            metadata=_MAX_HCS1_REFERENCE,
+            metadata_digest=Hcs27MetadataDigest(
+                alg="sha-256",
+                b64u=_encode_base64url(hashlib.sha256(inline_metadata).digest()),
+            ),
+            m=message_memo,
         )
+        self.validateCheckpointMessage(
+            message=provisional_message.model_dump(by_alias=True, exclude_none=True),
+            resolver=lambda _reference: inline_metadata,
+        )
+        reference, digest = self._publish_metadata_hcs1(inline_metadata)
         overflow_message = Hcs27CheckpointMessage(
             metadata=reference,
             metadata_digest=Hcs27MetadataDigest(alg="sha-256", b64u=digest),
@@ -894,7 +943,6 @@ class Hcs27Client(HcsModuleClient):
                 "checkpoint overflow pointer message exceeds 1024 bytes",
                 ErrorContext(details={"size": len(overflow_encoded)}),
             )
-        inline_metadata = _encode_json_bytes(metadata.model_dump(by_alias=True, exclude_none=True))
         return overflow_payload, inline_metadata
 
     def _fetch_topic_messages(self, topic_id: str) -> list[MirrorTopicMessage]:
@@ -925,14 +973,28 @@ class Hcs27Client(HcsModuleClient):
                 mimeType="application/json",
             ),
             InscribeViaRegistryBrokerOptions(
-                base_url=self.transport.base_url,
+                base_url=self._inscriber_base_url,
                 ledger_account_id=self._operator_id,
                 ledger_private_key=self._operator_key_raw,
                 ledger_network=self._network,
                 file_standard="hcs-1",
             ),
         )
-        topic_id = _clean(getattr(result, "topic_id", None))
+        topic_id = ""
+        raw_result = getattr(result, "result", None)
+        if isinstance(raw_result, Mapping):
+            topic_id = _clean(raw_result.get("topicId", raw_result.get("topic_id")))
+        if not topic_id:
+            raw_inscription = getattr(result, "inscription", None)
+            if isinstance(raw_inscription, Mapping):
+                topic_id = _clean(
+                    raw_inscription.get("topicId", raw_inscription.get("topic_id"))
+                )
+            else:
+                topic_id = _clean(
+                    getattr(raw_inscription, "topic_id", None)
+                    or getattr(raw_inscription, "topicId", None)
+                )
         if not topic_id or not getattr(result, "confirmed", False):
             raise ValidationError("failed to inscribe HCS-1 metadata", ErrorContext())
         return f"hcs://1/{topic_id}", _encode_base64url(hashlib.sha256(metadata_bytes).digest())
@@ -946,7 +1008,7 @@ class Hcs27Client(HcsModuleClient):
             )
         except Exception as exc:
             raise TransportError(
-                "failed to resolve HCS-1 reference via Kiloscribe CDN",
+                "failed to resolve HCS-1 reference via inscription CDN",
                 ErrorContext(details={"reference": reference, "reason": str(exc)}),
             ) from exc
         if not response.content:
@@ -1289,6 +1351,7 @@ class AsyncHcs27Client(AsyncHcsModuleClient):
         hedera_client: object | None = None,
         network: str = "testnet",
         mirror_base_url: str | None = None,
+        inscriber_base_url: str | None = None,
         cdn_base_url: str | None = None,
         mirror_client: MirrorNodeClient | None = None,
     ) -> None:
@@ -1307,6 +1370,7 @@ class AsyncHcs27Client(AsyncHcsModuleClient):
             hedera_client=hedera_client,
             network=network,
             mirror_base_url=mirror_base_url,
+            inscriber_base_url=inscriber_base_url,
             cdn_base_url=cdn_base_url,
             mirror_client=mirror_client,
         )
