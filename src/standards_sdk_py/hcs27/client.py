@@ -357,9 +357,6 @@ class Hcs27Client(HcsModuleClient):
                     "invalid operator credentials",
                     ErrorContext(details={"reason": str(exc)}),
                 ) from exc
-        elif hedera_client is None:
-            self._hedera = None
-            return
         client = hedera_client or (
             hedera.Client.forMainnet() if self._network == "mainnet" else hedera.Client.forTestnet()
         )
@@ -740,7 +737,13 @@ class Hcs27Client(HcsModuleClient):
         if not topic_id:
             raise ValidationError("topicId is required", ErrorContext())
         resolver = self._extract_resolver(args, kwargs)
-        response = self._mirror_client.get_topic_messages(topic_id, order="asc")
+        try:
+            response = self._mirror_client.get_topic_messages(topic_id, order="asc")
+        except Exception as exc:
+            raise TransportError(
+                "failed to fetch HCS-27 checkpoints from the mirror node",
+                ErrorContext(details={"reason": str(exc), "topic_id": topic_id}),
+            ) from exc
         records: list[JsonObject] = []
         for item in response.messages:
             try:

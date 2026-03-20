@@ -7,7 +7,7 @@ import json
 import brotli
 import pytest
 
-from standards_sdk_py.exceptions import ValidationError
+from standards_sdk_py.exceptions import TransportError, ValidationError
 from standards_sdk_py.hcs27 import HCS27Client
 
 
@@ -208,3 +208,19 @@ def test_hcs27_resolve_hcs1_reference_decodes_wrapped_payload() -> None:
 
     resolved = client.resolve_h_c_s1_reference("hcs://1/0.0.123")
     assert resolved == original
+
+
+def test_hcs27_get_checkpoints_wraps_mirror_failures() -> None:
+    client = _client()
+    client._mirror_client = type(
+        "Mirror",
+        (),
+        {
+            "get_topic_messages": lambda self, topic_id, order="asc": (_ for _ in ()).throw(
+                RuntimeError("mirror unavailable")
+            )
+        },
+    )()
+
+    with pytest.raises(TransportError, match="failed to fetch HCS-27 checkpoints"):
+        client.get_checkpoints("0.0.123")
