@@ -169,6 +169,14 @@ class InscriptionResponse(BaseModel):
 
     confirmed: bool | None = None
     quote: bool | None = None
+    job_id: str | None = Field(default=None, alias="jobId")
+    status: str | None = None
+    hrl: str | None = None
+    topic_id: str | None = Field(default=None, alias="topicId")
+    network: str | None = None
+    error: str | None = None
+    created_at: str | None = Field(default=None, alias="createdAt")
+    updated_at: str | None = Field(default=None, alias="updatedAt")
     result: object | None = None
     inscription: object | None = None
     cost_summary: object | None = Field(default=None, alias="costSummary")
