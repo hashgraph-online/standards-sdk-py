@@ -257,7 +257,7 @@ def _write_canonical_json(value: object) -> str:
     if isinstance(value, dict):
         parts = [
             json.dumps(key, ensure_ascii=False) + ":" + _write_canonical_json(value[key])
-            for key in sorted(value)
+            for key in sorted(value, key=_utf16_sort_key)
         ]
         return "{" + ",".join(parts) + "}"
     raise ValidationError(
@@ -269,6 +269,25 @@ def _write_canonical_json(value: object) -> str:
 def _canonicalize_json(value: object) -> bytes:
     normalized = _normalize_json_value(value)
     return _write_canonical_json(normalized).encode("utf-8")
+
+
+def _utf16_sort_key(value: str) -> tuple[int, ...]:
+    encoded = value.encode("utf-16-be", "surrogatepass")
+    return tuple(
+        int.from_bytes(encoded[index : index + 2], "big")
+        for index in range(0, len(encoded), 2)
+    )
+
+
+def _coerce_canonical_entry_bytes(value: object) -> bytes:
+    if isinstance(value, bytes | bytearray):
+        return bytes(value)
+    if isinstance(value, str):
+        return value.encode("utf-8")
+    raise ValidationError(
+        "canonicalEntry must be a UTF-8 string or bytes",
+        ErrorContext(details={"type": type(value).__name__}),
+    )
 
 
 def _encode_json_bytes(value: object) -> bytes:
@@ -597,8 +616,26 @@ class Hcs27Client(HcsModuleClient):
         return hashlib.sha256(b"").hexdigest()
 
     def hashLeaf(self, *args: object, **kwargs: object) -> str:
-        entry = self._extract_value(args, kwargs, ("canonicalEntry", "canonical_entry", "entry"))
-        canonical = entry if isinstance(entry, bytes | bytearray) else _canonicalize_json(entry)
+        payload = (
+            cast(Mapping[str, object], args[0])
+            if len(args) == 1 and isinstance(args[0], Mapping)
+            else None
+        )
+        if "canonicalEntry" in kwargs:
+            canonical = _coerce_canonical_entry_bytes(kwargs["canonicalEntry"])
+        elif "canonical_entry" in kwargs:
+            canonical = _coerce_canonical_entry_bytes(kwargs["canonical_entry"])
+        elif payload is not None and "canonicalEntry" in payload:
+            canonical = _coerce_canonical_entry_bytes(payload["canonicalEntry"])
+        elif payload is not None and "canonical_entry" in payload:
+            canonical = _coerce_canonical_entry_bytes(payload["canonical_entry"])
+        else:
+            entry = self._extract_value(args, kwargs, ("entry",))
+            canonical = (
+                bytes(entry)
+                if isinstance(entry, bytes | bytearray)
+                else _canonicalize_json(entry)
+            )
         return _hash_leaf_bytes(bytes(canonical)).hex()
 
     def hashNode(self, *args: object, **kwargs: object) -> str:

@@ -116,6 +116,19 @@ def test_hcs27_canonicalize_json_uses_ecmascript_float_rendering() -> None:
     assert canonical == b'{"value":333333333.3333333}'
 
 
+def test_hcs27_canonicalize_json_sorts_keys_by_utf16_code_units() -> None:
+    canonical = hcs27_client_module._canonicalize_json({"𐀀": 1, "\ue000": 2})
+    assert canonical == '{"𐀀":1,"\ue000":2}'.encode()
+
+
+def test_hcs27_hash_leaf_uses_raw_canonical_entry_bytes() -> None:
+    client = _client()
+    canonical_entry = '{"a":1}'
+    assert client.hash_leaf({"canonicalEntry": canonical_entry}) == hashlib.sha256(
+        b"\x00" + canonical_entry.encode("utf-8")
+    ).hexdigest()
+
+
 def test_hcs27_validate_checkpoint_message_resolves_hcs1_reference() -> None:
     client = _client()
     metadata = _valid_metadata()

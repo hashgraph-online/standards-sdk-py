@@ -516,7 +516,9 @@ def _coerce_inscription_options(value: object | None) -> InscriptionOptions:
                 payload.get("waitIntervalMs", payload.get("wait_interval_ms", 4000))
             ),
             api_key=cast(str | None, payload.get("apiKey", payload.get("api_key"))),
-            base_url=cast(str | None, payload.get("baseURL", payload.get("base_url"))),
+            base_url=cast(
+                str | None, payload.get("baseUrl", payload.get("baseURL", payload.get("base_url")))
+            ),
             auth_base_url=cast(
                 str | None, payload.get("authBaseURL", payload.get("auth_base_url"))
             ),
@@ -992,6 +994,62 @@ def _resolve_inscriber_client(
         api_key=api_key,
         network=options.network or client_config.network,
         base_url=options.base_url or DEFAULT_INSCRIBER_API_URL,
+    )
+
+
+def _resolve_readonly_inscriber_client(options: InscriptionOptions) -> Client:
+    api_key = (options.api_key or "").strip()
+    network = (options.network or "").strip()
+    if not api_key:
+        raise ValidationError("apiKey is required", ErrorContext())
+    if not network:
+        raise ValidationError("network is required", ErrorContext())
+    return Client(
+        api_key=api_key,
+        network=network,
+        base_url=options.base_url or DEFAULT_INSCRIBER_API_URL,
+    )
+
+
+def _uses_hedera_credentials_payload(payload: Mapping[str, object]) -> bool:
+    if "clientConfig" in payload:
+        return True
+    account_id = str(payload.get("accountId", payload.get("account_id", ""))).strip()
+    private_key = str(payload.get("privateKey", payload.get("private_key", ""))).strip()
+    return bool(account_id and private_key)
+
+
+def _uses_legacy_broker_flow(options: InscribeViaRegistryBrokerOptions) -> bool:
+    account_id = (options.ledger_account_id or "").strip()
+    private_key = (options.ledger_private_key or "").strip()
+    return not account_id or not private_key
+
+
+def _broker_job_to_inscriber_job(job: BrokerJobResponse) -> InscriberJob:
+    status = job.status or ""
+    return InscriberJob(
+        id=job.job_id or job.id,
+        status=status,
+        completed=status.lower() == "completed",
+        topic_id=job.topic_id,
+        error=job.error,
+    )
+
+
+def _broker_quote_to_inscriber_quote(quote: BrokerQuoteResponse) -> InscriberQuoteResult:
+    total_cost_hbar = str(quote.total_cost_hbar if quote.total_cost_hbar is not None else 0)
+    return InscriberQuoteResult(
+        totalCostHbar=total_cost_hbar,
+        validUntil=quote.expires_at or "",
+        breakdown=InscriberQuoteBreakdown(
+            transfers=[
+                InscriberQuoteTransfer(
+                    to="Registry Broker",
+                    amount=total_cost_hbar,
+                    description=quote.mode or "Inscription fee",
+                )
+            ]
+        ),
     )
 
 
@@ -1531,6 +1589,22 @@ def inscribe(
 ) -> InscriptionResponse:
     """Top-level inscribe helper with legacy two-argument support."""
 
+    if isinstance(
+        client_config_or_options, InscribeViaRegistryBrokerOptions
+    ) and _uses_legacy_broker_flow(client_config_or_options):
+        result = inscribe_via_registry_broker(input_payload, client_config_or_options)
+        return InscriptionResponse(
+            confirmed=result.confirmed,
+            jobId=result.job_id,
+            status=result.status,
+            hrl=result.hrl,
+            topicId=result.topic_id,
+            network=result.network,
+            error=result.error,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
+            result=result.model_dump(by_alias=True, exclude_none=True),
+        )
     client_config, inscription_options = _resolve_inscriber_invocation(
         client_config_or_options,
         options,
@@ -1565,13 +1639,24 @@ def retrieve_inscription(
     """Fetch an inscription job by transaction ID."""
 
     if isinstance(options, InscribeViaRegistryBrokerOptions):
+        if _uses_legacy_broker_flow(options):
+            broker_client = BrokerInscriberClient(
+                base_url=options.base_url,
+                api_key=_resolve_api_key(options),
+            )
+            return _broker_job_to_inscriber_job(broker_client.get_job(transaction_id))
         client_config, inscription_options = _coerce_legacy_inscriber_inputs(options)
-    else:
-        payload = options
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+        return inscriber_client.retrieve_inscription(transaction_id)
+
+    payload = options
+    if _uses_hedera_credentials_payload(payload):
         client_config = _coerce_hedera_client_config(payload.get("clientConfig", payload))
         inscription_options = _coerce_inscription_options(payload.get("options", payload))
-    client = _resolve_inscriber_client(client_config, inscription_options, None)
-    return client.retrieve_inscription(transaction_id)
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+    else:
+        inscriber_client = _resolve_readonly_inscriber_client(_coerce_inscription_options(payload))
+    return inscriber_client.retrieve_inscription(transaction_id)
 
 
 def wait_for_inscription_confirmation(
@@ -1581,13 +1666,34 @@ def wait_for_inscription_confirmation(
     """Wait for inscription completion."""
 
     if isinstance(options, InscribeViaRegistryBrokerOptions):
+        if _uses_legacy_broker_flow(options):
+            broker_client = BrokerInscriberClient(
+                base_url=options.base_url,
+                api_key=_resolve_api_key(options),
+            )
+            result = broker_client.wait_for_job(
+                transaction_id,
+                timeout_ms=options.wait_timeout_ms,
+                poll_interval_ms=options.poll_interval_ms,
+            )
+            return _broker_job_to_inscriber_job(result)
         client_config, inscription_options = _coerce_legacy_inscriber_inputs(options)
-    else:
-        payload = options
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+        return inscriber_client.wait_for_inscription(
+            transaction_id,
+            max_attempts=inscription_options.wait_max_attempts,
+            interval_ms=inscription_options.wait_interval_ms,
+        )
+
+    payload = options
+    if _uses_hedera_credentials_payload(payload):
         client_config = _coerce_hedera_client_config(payload.get("clientConfig", payload))
         inscription_options = _coerce_inscription_options(payload.get("options", payload))
-    client = _resolve_inscriber_client(client_config, inscription_options, None)
-    return client.wait_for_inscription(
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+    else:
+        inscription_options = _coerce_inscription_options(payload)
+        inscriber_client = _resolve_readonly_inscriber_client(inscription_options)
+    return inscriber_client.wait_for_inscription(
         transaction_id,
         max_attempts=inscription_options.wait_max_attempts,
         interval_ms=inscription_options.wait_interval_ms,
@@ -1604,6 +1710,11 @@ def generate_quote(
 ) -> InscriberQuoteResult:
     """Top-level quote helper matching TypeScript `generateQuote`."""
 
+    if isinstance(
+        client_config_or_options, InscribeViaRegistryBrokerOptions
+    ) and _uses_legacy_broker_flow(client_config_or_options):
+        quote = get_registry_broker_quote(input_payload, client_config_or_options)
+        return _broker_quote_to_inscriber_quote(quote)
     client_config, inscription_options = _resolve_inscriber_invocation(
         client_config_or_options,
         options,
