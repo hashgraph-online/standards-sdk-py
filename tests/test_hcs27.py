@@ -4,7 +4,6 @@ import base64
 import hashlib
 import json
 
-import brotli
 import pytest
 
 from standards_sdk_py.exceptions import TransportError, ValidationError
@@ -200,41 +199,44 @@ def test_hcs27_validate_checkpoint_chain_uses_prev_root_hash_b64u() -> None:
     assert client.validate_checkpoint_chain(records) is True
 
 
-def test_hcs27_resolve_hcs1_reference_decodes_wrapped_payload() -> None:
+def test_hcs27_resolve_hcs1_reference_reads_raw_cdn_payload() -> None:
     client = _client()
     original = json.dumps(_valid_metadata(), separators=(",", ":")).encode("utf-8")
-    wrapped = json.dumps(
-        {
-            "o": 0,
-            "c": "data:application/json;base64,"
-            + base64.b64encode(brotli.compress(original)).decode("utf-8"),
-        }
-    ).encode("utf-8")
-    encoded = base64.b64encode(wrapped).decode("utf-8")
-
-    class FakeMirrorResponse:
-        def __init__(self) -> None:
-            self.messages = [
-                type(
-                    "Msg",
-                    (),
-                    {
-                        "message": encoded,
-                        "consensus_timestamp": "1.2",
-                        "sequence_number": 1,
-                        "model_extra": {},
-                    },
-                )()
-            ]
-
-    client._mirror_client = type(
-        "Mirror",
+    client._hrl_transport = type(
+        "Transport",
         (),
-        {"get_topic_messages": lambda self, topic_id, order="asc": FakeMirrorResponse()},
+        {
+            "request": staticmethod(
+                lambda method, path, query: type(
+                    "Response",
+                    (),
+                    {"content": original},
+                )()
+            )
+        },
     )()
 
     resolved = client.resolve_h_c_s1_reference("hcs://1/0.0.123")
     assert resolved == original
+
+
+def test_hcs27_resolve_hcs1_reference_uses_kiloscribe_cdn() -> None:
+    client = _client()
+    client._hrl_transport = type(
+        "Transport",
+        (),
+        {
+            "request": staticmethod(
+                lambda method, path, query: type(
+                    "Response",
+                    (),
+                    {"content": b'{"type":"ans-checkpoint-v1"}'},
+                )()
+            )
+        },
+    )()
+    resolved = client.resolve_h_c_s1_reference("hcs://1/0.0.123")
+    assert resolved == b'{"type":"ans-checkpoint-v1"}'
 
 
 def test_hcs27_get_checkpoints_wraps_mirror_failures() -> None:
@@ -370,6 +372,85 @@ def test_hcs27_publish_checkpoint_uses_utf8_json_submit_bytes() -> None:
         separators=(",", ":"),
         ensure_ascii=False,
     ).encode("utf-8")
+
+
+def test_hcs27_publish_checkpoint_accepts_single_options_mapping() -> None:
+    client = HCS27Client()
+    submitted: dict[str, object] = {}
+
+    def get_receipt(_self: object, _hedera_client: object) -> object:
+        return type("FakeReceipt", (), {"topicSequenceNumber": 5})()
+
+    fake_response = type(
+        "FakeResponse",
+        (),
+        {
+            "transactionId": "0.0.123@1.2.3",
+            "getReceipt": get_receipt,
+        },
+    )()
+
+    def set_topic_id(self: object, topic: object) -> object:
+        submitted["topic"] = topic
+        return self
+
+    def set_message(self: object, message: bytes) -> object:
+        submitted["message"] = message
+        return self
+
+    def set_transaction_memo(self: object, memo: str) -> object:
+        submitted["memo"] = memo
+        return self
+
+    def execute(_self: object, _hedera_client: object) -> object:
+        return fake_response
+
+    client._hedera = type(
+        "FakeHedera",
+        (),
+        {
+            "TopicId": type(
+                "FakeTopicId",
+                (),
+                {"fromString": staticmethod(lambda value: value)},
+            ),
+            "TopicMessageSubmitTransaction": type(
+                "FakeTransaction",
+                (),
+                {
+                    "setTopicId": set_topic_id,
+                    "setMessage": set_message,
+                    "setTransactionMemo": set_transaction_memo,
+                    "execute": execute,
+                },
+            ),
+        },
+    )()
+    client._hedera_client = object()
+    client.validateCheckpointMessage = lambda **kwargs: kwargs["message"]["metadata"]
+
+    result = client.publish_checkpoint(
+        {
+            "topicId": "0.0.123",
+            "metadata": _valid_metadata(),
+            "messageMemo": "checkpoint memo",
+            "transactionMemo": "analytics memo",
+        }
+    )
+
+    assert result["sequenceNumber"] == 5
+    assert submitted["topic"] == "0.0.123"
+    assert submitted["memo"] == "analytics memo"
+
+
+def test_hcs27_publish_metadata_hcs1_requires_inscriber_credentials() -> None:
+    client = HCS27Client()
+    metadata_bytes = json.dumps(_valid_metadata(), separators=(",", ":")).encode("utf-8")
+    with pytest.raises(
+        ValidationError,
+        match="operator credentials are required for inscriber-backed HCS-1 overflow publication",
+    ):
+        client._publish_metadata_hcs1(metadata_bytes)
 
 
 def test_async_hcs27_client_accepts_mirror_client() -> None:

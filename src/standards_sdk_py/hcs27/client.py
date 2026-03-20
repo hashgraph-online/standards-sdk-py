@@ -46,6 +46,7 @@ from standards_sdk_py.shared.http import AsyncHttpTransport, SyncHttpTransport
 from standards_sdk_py.shared.types import JsonObject, JsonValue
 
 _DEFAULT_REGISTRY_BROKER_BASE_URL = "https://registry.hashgraphonline.com"
+_DEFAULT_KILOSCRIBE_CDN_ENDPOINT = "https://kiloscribe.com/api/inscription-cdn"
 _DEFAULT_MIRROR_BY_NETWORK = {
     "mainnet": "https://mainnet-public.mirrornode.hedera.com/api/v1",
     "testnet": "https://testnet.mirrornode.hedera.com/api/v1",
@@ -328,6 +329,7 @@ class Hcs27Client(HcsModuleClient):
         self._mirror_client = mirror_client or MirrorNodeClient(
             transport=SyncHttpTransport(base_url=resolved_mirror_base),
         )
+        self._hrl_transport = SyncHttpTransport(base_url=_DEFAULT_KILOSCRIBE_CDN_ENDPOINT)
         self._hedera: Any | None = None
         self._hedera_client: object | None = None
         self._operator_id = _clean(operator_id)
@@ -795,20 +797,7 @@ class Hcs27Client(HcsModuleClient):
                 ErrorContext(details={"reference": reference}),
             )
         topic_id = match.group(1)
-        response = self._mirror_client.get_topic_messages(topic_id, order="asc")
-        if not response.messages:
-            raise ParseError(
-                "no HCS-1 payload found",
-                ErrorContext(details={"reference": reference}),
-            )
-        return cast(
-            JsonValue,
-            self._decode_hcs1_payload_from_messages(
-                reference,
-                response.messages[0],
-                response.messages,
-            ),
-        )
+        return cast(JsonValue, self._resolve_hrl_via_cdn(reference, topic_id))
 
     def _validate_metadata(self, metadata: Hcs27CheckpointMetadata) -> None:
         if metadata.type != "ans-checkpoint-v1":
@@ -897,7 +886,7 @@ class Hcs27Client(HcsModuleClient):
     def _publish_metadata_hcs1(self, metadata_bytes: bytes) -> tuple[str, str]:
         if not self._operator_id or not self._operator_key_raw:
             raise ValidationError(
-                "operator credentials are required for HCS-1 overflow publication",
+                "operator credentials are required for inscriber-backed HCS-1 overflow publication",
                 ErrorContext(),
             )
         result = inscribe(
@@ -918,6 +907,25 @@ class Hcs27Client(HcsModuleClient):
         if not topic_id or not getattr(result, "confirmed", False):
             raise ValidationError("failed to inscribe HCS-1 metadata", ErrorContext())
         return f"hcs://1/{topic_id}", _encode_base64url(hashlib.sha256(metadata_bytes).digest())
+
+    def _resolve_hrl_via_cdn(self, reference: str, topic_id: str) -> bytes:
+        try:
+            response = self._hrl_transport.request(
+                "GET",
+                f"/{topic_id}",
+                query={"network": self._network},
+            )
+        except Exception as exc:
+            raise TransportError(
+                "failed to resolve HCS-1 reference via Kiloscribe CDN",
+                ErrorContext(details={"reference": reference, "reason": str(exc)}),
+            ) from exc
+        if not response.content:
+            raise ParseError(
+                "resolved HCS-1 payload was empty",
+                ErrorContext(details={"reference": reference}),
+            )
+        return bytes(response.content)
 
     def _merkle_root_from_canonical_entries(self, entries: list[bytes]) -> bytes:
         if not entries:
@@ -1266,21 +1274,40 @@ class Hcs27Client(HcsModuleClient):
                 "publishCheckpoint expects at most four positional arguments",
                 ErrorContext(),
             )
-        topic_id = _clean(args[0] if args else kwargs.get("topicId", kwargs.get("topic_id")))
+        options = (
+            cast(Mapping[str, object] | None, args[0])
+            if len(args) == 1 and isinstance(args[0], Mapping)
+            else None
+        )
+        topic_id = _clean(
+            options.get("topicId", options.get("topic_id"))
+            if options is not None
+            else (args[0] if args else kwargs.get("topicId", kwargs.get("topic_id")))
+        )
         if not topic_id:
             raise ValidationError("topicId is required", ErrorContext())
         metadata_payload: object | None = None
-        if len(args) >= 2:
+        if options is not None:
+            metadata_payload = options.get("metadata")
+        elif len(args) >= 2:
             metadata_payload = args[1]
         elif "metadata" in kwargs:
             metadata_payload = kwargs["metadata"]
         if metadata_payload is None:
             raise ValidationError("metadata is required", ErrorContext())
         message_memo = (
-            cast(str | None, args[2]) if len(args) >= 3 and isinstance(args[2], str) else None
+            cast(str | None, options.get("messageMemo", options.get("message_memo")))
+            if options is not None
+            else (
+                cast(str | None, args[2]) if len(args) >= 3 and isinstance(args[2], str) else None
+            )
         )
         transaction_memo = (
-            cast(str | None, args[3]) if len(args) >= 4 and isinstance(args[3], str) else None
+            cast(str | None, options.get("transactionMemo", options.get("transaction_memo")))
+            if options is not None
+            else (
+                cast(str | None, args[3]) if len(args) >= 4 and isinstance(args[3], str) else None
+            )
         )
         if isinstance(kwargs.get("messageMemo"), str):
             message_memo = cast(str, kwargs["messageMemo"])
