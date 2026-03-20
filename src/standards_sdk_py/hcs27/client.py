@@ -39,7 +39,7 @@ from standards_sdk_py.inscriber import (
     inscribe,
 )
 from standards_sdk_py.mirror import MirrorNodeClient
-from standards_sdk_py.mirror.models import MirrorTopicMessage
+from standards_sdk_py.mirror.models import MirrorTopicMessage, MirrorTopicMessagesResponse
 from standards_sdk_py.shared.config import SdkConfig
 from standards_sdk_py.shared.hcs_module import AsyncHcsModuleClient, HcsModuleClient
 from standards_sdk_py.shared.http import AsyncHttpTransport, SyncHttpTransport
@@ -52,6 +52,7 @@ _DEFAULT_MIRROR_BY_NETWORK = {
 }
 _ONCHAIN_CREDS_ERROR = "on-chain operator credentials are not configured"
 _HCS1_URI_RE = re.compile(r"^hcs://1/(\d+\.\d+\.\d+)$")
+_MAX_MESSAGE_MEMO_CHARS = 299
 _brotli = import_module("brotli")
 
 
@@ -137,16 +138,20 @@ def _decode_base64(value: str, field_name: str) -> bytes:
 
 
 def _parse_canonical_uint(field_name: str, value: str) -> int:
-    trimmed = value.strip()
-    if not trimmed:
+    if value == "":
         raise ValidationError(f"{field_name} is required", ErrorContext())
-    if trimmed != "0" and trimmed.startswith("0"):
+    if value != value.strip():
+        raise ValidationError(
+            f"{field_name} must be a canonical base-10 string",
+            ErrorContext(details={"field": field_name, "value": value}),
+        )
+    if value != "0" and value.startswith("0"):
         raise ValidationError(
             f"{field_name} must be a canonical base-10 string",
             ErrorContext(details={"field": field_name, "value": value}),
         )
     try:
-        parsed = int(trimmed, 10)
+        parsed = int(value, 10)
     except ValueError as exc:
         raise ValidationError(
             f"{field_name} must be a canonical base-10 string",
@@ -237,6 +242,10 @@ def _write_canonical_json(value: object) -> str:
 def _canonicalize_json(value: object) -> bytes:
     normalized = _normalize_json_value(value)
     return _write_canonical_json(normalized).encode("utf-8")
+
+
+def _encode_json_bytes(value: object) -> bytes:
+    return json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
 def _largest_power_of_two_less_than(value: int) -> int:
@@ -449,8 +458,11 @@ class Hcs27Client(HcsModuleClient):
             raise ValidationError("p must be hcs-27", ErrorContext())
         if message.op != "register":
             raise ValidationError("op must be register", ErrorContext())
-        if message.m is not None and len(message.m) >= 300:
-            raise ValidationError("message memo must be less than 300 characters", ErrorContext())
+        if message.m is not None and len(message.m) > _MAX_MESSAGE_MEMO_CHARS:
+            raise ValidationError(
+                "message memo must be at most 299 characters",
+                ErrorContext(),
+            )
         if isinstance(message.metadata, str):
             reference = _clean(message.metadata)
             if not reference.startswith("hcs://1/"):
@@ -712,7 +724,7 @@ class Hcs27Client(HcsModuleClient):
         try:
             topic = self._hedera.TopicId.fromString(topic_id)
             tx = self._hedera.TopicMessageSubmitTransaction().setTopicId(topic)
-            tx.setMessage(json.dumps(message_payload, separators=(",", ":")).encode("utf-8"))
+            tx.setMessage(_encode_json_bytes(message_payload))
             tx.setTransactionMemo(transaction_memo or self.buildTransactionMemo())
             response = tx.execute(self._hedera_client)
             receipt = response.getReceipt(self._hedera_client)
@@ -738,14 +750,14 @@ class Hcs27Client(HcsModuleClient):
             raise ValidationError("topicId is required", ErrorContext())
         resolver = self._extract_resolver(args, kwargs)
         try:
-            response = self._mirror_client.get_topic_messages(topic_id, order="asc")
+            items = self._fetch_topic_messages(topic_id)
         except Exception as exc:
             raise TransportError(
                 "failed to fetch HCS-27 checkpoints from the mirror node",
                 ErrorContext(details={"reason": str(exc), "topic_id": topic_id}),
             ) from exc
         records: list[JsonObject] = []
-        for item in response.messages:
+        for item in items:
             try:
                 payload = base64.b64decode(item.message).decode("utf-8")
                 raw_message = json.loads(payload)
@@ -844,15 +856,11 @@ class Hcs27Client(HcsModuleClient):
             m=message_memo,
         )
         payload = cast(JsonObject, message.model_dump(by_alias=True, exclude_none=True))
-        encoded = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        encoded = _encode_json_bytes(payload)
         if len(encoded) <= 1024:
             return payload, None
         reference, digest = self._publish_metadata_hcs1(
-            json.dumps(
-                metadata.model_dump(by_alias=True, exclude_none=True),
-                separators=(",", ":"),
-                ensure_ascii=False,
-            ).encode("utf-8")
+            _encode_json_bytes(metadata.model_dump(by_alias=True, exclude_none=True))
         )
         overflow_message = Hcs27CheckpointMessage(
             metadata=reference,
@@ -863,22 +871,28 @@ class Hcs27Client(HcsModuleClient):
             JsonObject,
             overflow_message.model_dump(by_alias=True, exclude_none=True),
         )
-        overflow_encoded = json.dumps(
-            overflow_payload,
-            separators=(",", ":"),
-            ensure_ascii=False,
-        ).encode("utf-8")
+        overflow_encoded = _encode_json_bytes(overflow_payload)
         if len(overflow_encoded) > 1024:
             raise ValidationError(
                 "checkpoint overflow pointer message exceeds 1024 bytes",
                 ErrorContext(details={"size": len(overflow_encoded)}),
             )
-        inline_metadata = json.dumps(
-            metadata.model_dump(by_alias=True, exclude_none=True),
-            separators=(",", ":"),
-            ensure_ascii=False,
-        ).encode("utf-8")
+        inline_metadata = _encode_json_bytes(metadata.model_dump(by_alias=True, exclude_none=True))
         return overflow_payload, inline_metadata
+
+    def _fetch_topic_messages(self, topic_id: str) -> list[MirrorTopicMessage]:
+        collect_items = getattr(self._mirror_client, "_collect_items", None)
+        if callable(collect_items):
+            raw_items = collect_items(
+                f"/topics/{topic_id}/messages",
+                query={"order": "asc"},
+                item_key="messages",
+            )
+            return [MirrorTopicMessage.model_validate(item) for item in raw_items]
+
+        response = self._mirror_client.get_topic_messages(topic_id, order="asc")
+        validated = MirrorTopicMessagesResponse.model_validate(response)
+        return validated.messages
 
     def _publish_metadata_hcs1(self, metadata_bytes: bytes) -> tuple[str, str]:
         if not self._operator_id or not self._operator_key_raw:
@@ -1309,6 +1323,7 @@ class AsyncHcs27Client(AsyncHcsModuleClient):
         hedera_client: object | None = None,
         network: str = "testnet",
         mirror_base_url: str | None = None,
+        mirror_client: MirrorNodeClient | None = None,
     ) -> None:
         config = SdkConfig.from_env()
         resolved_transport = transport or AsyncHttpTransport(
@@ -1325,6 +1340,7 @@ class AsyncHcs27Client(AsyncHcsModuleClient):
             hedera_client=hedera_client,
             network=network,
             mirror_base_url=mirror_base_url,
+            mirror_client=mirror_client,
         )
 
     async def buildTopicMemo(self, *args: object, **kwargs: object) -> JsonValue:

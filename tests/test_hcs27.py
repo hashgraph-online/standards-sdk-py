@@ -8,7 +8,7 @@ import brotli
 import pytest
 
 from standards_sdk_py.exceptions import TransportError, ValidationError
-from standards_sdk_py.hcs27 import HCS27Client
+from standards_sdk_py.hcs27 import AsyncHCS27Client, HCS27Client
 
 
 def _client() -> HCS27Client:
@@ -81,6 +81,33 @@ def test_hcs27_validate_checkpoint_message_rejects_non_canonical_tree_size() -> 
     ):
         client.validate_checkpoint_message(
             {"message": {"p": "hcs-27", "op": "register", "metadata": metadata}}
+        )
+
+
+def test_hcs27_validate_checkpoint_message_rejects_tree_size_whitespace() -> None:
+    client = _client()
+    metadata = _valid_metadata()
+    metadata["root"] = {"treeSize": " 1 ", "rootHashB64u": _root_hash_b64u("root")}
+    with pytest.raises(
+        ValidationError, match="metadata.root.treeSize must be a canonical base-10 string"
+    ):
+        client.validate_checkpoint_message(
+            {"message": {"p": "hcs-27", "op": "register", "metadata": metadata}}
+        )
+
+
+def test_hcs27_validate_checkpoint_message_rejects_300_char_memo() -> None:
+    client = _client()
+    with pytest.raises(ValidationError, match="message memo must be at most 299 characters"):
+        client.validate_checkpoint_message(
+            {
+                "message": {
+                    "p": "hcs-27",
+                    "op": "register",
+                    "m": "x" * 300,
+                    "metadata": _valid_metadata(),
+                }
+            }
         )
 
 
@@ -224,3 +251,128 @@ def test_hcs27_get_checkpoints_wraps_mirror_failures() -> None:
 
     with pytest.raises(TransportError, match="failed to fetch HCS-27 checkpoints"):
         client.get_checkpoints("0.0.123")
+
+
+def test_hcs27_get_checkpoints_paginates_via_collect_items() -> None:
+    client = _client()
+    payload_one = {"p": "hcs-27", "op": "register", "metadata": _valid_metadata("stream-a")}
+    payload_two = {"p": "hcs-27", "op": "register", "metadata": _valid_metadata("stream-b")}
+    encoded_one = base64.b64encode(json.dumps(payload_one).encode("utf-8")).decode("utf-8")
+    encoded_two = base64.b64encode(json.dumps(payload_two).encode("utf-8")).decode("utf-8")
+
+    class PaginatedMirror:
+        def _collect_items(
+            self,
+            path: str,
+            *,
+            query: dict[str, object],
+            item_key: str,
+        ) -> list[dict[str, object]]:
+            assert path == "/topics/0.0.123/messages"
+            assert query == {"order": "asc"}
+            assert item_key == "messages"
+            return [
+                {
+                    "consensus_timestamp": "1.1",
+                    "message": encoded_one,
+                    "sequence_number": 1,
+                },
+                {
+                    "consensus_timestamp": "1.2",
+                    "message": encoded_two,
+                    "sequence_number": 2,
+                },
+            ]
+
+    client._mirror_client = PaginatedMirror()
+    records = client.get_checkpoints("0.0.123")
+    assert isinstance(records, list)
+    assert [record["sequence"] for record in records] == [1, 2]
+    assert [record["effectiveMetadata"]["stream"]["log_id"] for record in records] == [
+        "stream-a",
+        "stream-b",
+    ]
+
+
+def test_hcs27_publish_checkpoint_uses_utf8_json_submit_bytes() -> None:
+    client = HCS27Client()
+    submitted: dict[str, object] = {}
+    fake_receipt = type("FakeReceipt", (), {"topicSequenceNumber": 7})()
+
+    def get_receipt(_self: object, _hedera_client: object) -> object:
+        return fake_receipt
+
+    fake_response = type(
+        "FakeResponse",
+        (),
+        {
+            "transactionId": "0.0.123@1.2.3",
+            "getReceipt": get_receipt,
+        },
+    )()
+
+    def set_topic_id(self: object, topic: object) -> object:
+        submitted["topic"] = topic
+        return self
+
+    def set_message(self: object, message: bytes) -> object:
+        submitted["message"] = message
+        return self
+
+    def set_transaction_memo(self: object, memo: str) -> object:
+        submitted["memo"] = memo
+        return self
+
+    def execute(_self: object, _hedera_client: object) -> object:
+        return fake_response
+
+    fake_transaction_cls = type(
+        "FakeTransaction",
+        (),
+        {
+            "setTopicId": set_topic_id,
+            "setMessage": set_message,
+            "setTransactionMemo": set_transaction_memo,
+            "execute": execute,
+        },
+    )
+    fake_topic_id_cls = type(
+        "FakeTopicId",
+        (),
+        {"fromString": staticmethod(lambda value: value)},
+    )
+
+    client._hedera = type(
+        "FakeHedera",
+        (),
+        {
+            "TopicId": fake_topic_id_cls,
+            "TopicMessageSubmitTransaction": fake_transaction_cls,
+        },
+    )()
+    client._hedera_client = object()
+    expected_message = {
+        "p": "hcs-27",
+        "op": "register",
+        "metadata": _valid_metadata(),
+        "m": "snowman: \u2603",
+    }
+    client._prepare_checkpoint_payload = lambda metadata, message_memo: (
+        expected_message,
+        None,
+    )
+    client.validateCheckpointMessage = lambda **kwargs: kwargs["message"]["metadata"]
+
+    result = client.publish_checkpoint("0.0.123", _valid_metadata())
+    assert result["sequenceNumber"] == 7
+    assert submitted["message"] == json.dumps(
+        expected_message,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+
+
+def test_async_hcs27_client_accepts_mirror_client() -> None:
+    mirror_client = object()
+    client = AsyncHCS27Client(mirror_client=mirror_client)
+    assert client._sync_client._mirror_client is mirror_client
