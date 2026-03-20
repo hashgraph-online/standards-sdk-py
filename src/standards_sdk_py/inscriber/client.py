@@ -550,6 +550,12 @@ def _coerce_legacy_inscriber_inputs(
             "ledger_account_id and ledger_private_key are required for inscriber operations",
             ErrorContext(),
         )
+    normalized_base_url = (options.base_url or "").strip().rstrip("/")
+    use_direct_base_url = (
+        normalized_base_url
+        and normalized_base_url != DEFAULT_REGISTRY_BROKER_URL
+        and "/registry/api/" not in normalized_base_url
+    )
     client_config = HederaClientConfig(
         account_id=account_id,
         private_key=private_key,
@@ -560,8 +566,8 @@ def _coerce_legacy_inscriber_inputs(
         wait_for_confirmation=options.wait_for_confirmation,
         wait_interval_ms=options.poll_interval_ms,
         wait_max_attempts=max(options.wait_timeout_ms // max(options.poll_interval_ms, 1), 1),
-        api_key=(options.api_key or options.ledger_api_key),
-        base_url=options.base_url,
+        api_key=(options.api_key or options.ledger_api_key) if use_direct_base_url else None,
+        base_url=normalized_base_url if use_direct_base_url else None,
         metadata=options.metadata,
         tags=options.tags,
         file_standard=options.file_standard,

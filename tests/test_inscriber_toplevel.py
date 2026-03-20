@@ -206,6 +206,35 @@ def test_generate_quote_legacy_broker_options_accept_api_key_only() -> None:
         mock_quote.assert_called_once_with(_input(), _options())
 
 
+def test_coerce_legacy_inscriber_inputs_drops_broker_base_url_and_api_key() -> None:
+    client_config, options = inscriber_client_module._coerce_legacy_inscriber_inputs(
+        InscribeViaRegistryBrokerOptions(
+            base_url="https://hol.org/registry/api/v1",
+            api_key="broker-key",
+            ledger_account_id="0.0.1",
+            ledger_private_key="pk",
+            ledger_network="testnet",
+        )
+    )
+    assert client_config.network == "testnet"
+    assert options.base_url is None
+    assert options.api_key is None
+
+
+def test_coerce_legacy_inscriber_inputs_preserves_direct_inscriber_base_url() -> None:
+    _client_config, options = inscriber_client_module._coerce_legacy_inscriber_inputs(
+        InscribeViaRegistryBrokerOptions(
+            base_url="https://v2-api.tier.bot/api",
+            api_key="inscriber-key",
+            ledger_account_id="0.0.1",
+            ledger_private_key="pk",
+            ledger_network="testnet",
+        )
+    )
+    assert options.base_url == "https://v2-api.tier.bot/api"
+    assert options.api_key == "inscriber-key"
+
+
 def test_inscribe_waits_on_job_id_before_executed_transaction_id() -> None:
     fake_client = MagicMock()
     fake_client.start_inscription.return_value = InscriberJob(
