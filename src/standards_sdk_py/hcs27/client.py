@@ -274,8 +274,7 @@ def _canonicalize_json(value: object) -> bytes:
 def _utf16_sort_key(value: str) -> tuple[int, ...]:
     encoded = value.encode("utf-16-be", "surrogatepass")
     return tuple(
-        int.from_bytes(encoded[index : index + 2], "big")
-        for index in range(0, len(encoded), 2)
+        int.from_bytes(encoded[index : index + 2], "big") for index in range(0, len(encoded), 2)
     )
 
 
@@ -632,9 +631,7 @@ class Hcs27Client(HcsModuleClient):
         else:
             entry = self._extract_value(args, kwargs, ("entry",))
             canonical = (
-                bytes(entry)
-                if isinstance(entry, bytes | bytearray)
-                else _canonicalize_json(entry)
+                bytes(entry) if isinstance(entry, bytes | bytearray) else _canonicalize_json(entry)
             )
         return _hash_leaf_bytes(bytes(canonical)).hex()
 
