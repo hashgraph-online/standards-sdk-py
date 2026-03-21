@@ -130,6 +130,36 @@ def test_hcs27_hash_leaf_uses_raw_canonical_entry_bytes() -> None:
     )
 
 
+def test_hcs27_hash_leaf_unwraps_entry_options_mapping() -> None:
+    client = _client()
+    entry = {"event": "register", "registry": "example"}
+    assert client.hash_leaf({"entry": entry}) == client.hash_leaf(entry)
+
+
+def test_hcs27_leaf_hash_hex_from_entry_unwraps_entry_options_mapping() -> None:
+    client = _client()
+    entry = {"event": "register", "registry": "example"}
+    assert client.leaf_hash_hex_from_entry({"entry": entry}) == client.leaf_hash_hex_from_entry(
+        entry
+    )
+
+
+def test_hcs27_merkle_root_from_entries_unwraps_entries_options_mapping() -> None:
+    client = _client()
+    entries = [{"event": "register", "registry": "example"}]
+    assert client.merkle_root_from_entries({"entries": entries}) == client.merkle_root_from_entries(
+        entries
+    )
+
+
+def test_hcs27_merkle_root_from_canonical_entries_unwraps_entries_options_mapping() -> None:
+    client = _client()
+    entries = ['{"event":"register","registry":"example"}']
+    assert client.merkle_root_from_canonical_entries(
+        {"entries": entries}
+    ) == client.merkle_root_from_canonical_entries(entries)
+
+
 def test_hcs27_validate_checkpoint_message_resolves_hcs1_reference() -> None:
     client = _client()
     metadata = _valid_metadata()

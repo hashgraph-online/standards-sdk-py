@@ -206,6 +206,17 @@ def test_generate_quote_legacy_broker_options_accept_api_key_only() -> None:
         mock_quote.assert_called_once_with(_input(), _options())
 
 
+def test_resolve_inscriber_auth_base_url_uses_origin_of_custom_api_url() -> None:
+    options = InscriptionOptions(
+        base_url="https://inscriber.example.com/custom/api",
+        network="testnet",
+    )
+    assert (
+        inscriber_client_module._resolve_inscriber_auth_base_url(options)
+        == "https://inscriber.example.com"
+    )
+
+
 def test_coerce_legacy_inscriber_inputs_drops_broker_base_url_and_api_key() -> None:
     client_config, options = inscriber_client_module._coerce_legacy_inscriber_inputs(
         InscribeViaRegistryBrokerOptions(
@@ -239,10 +250,15 @@ def test_inscribe_waits_on_job_id_before_executed_transaction_id() -> None:
     fake_client = MagicMock()
     fake_client.start_inscription.return_value = InscriberJob(
         tx_id="0.0.123@1.2.3",
+        topic_id="0.0.123",
         transactionBytes="dGVzdA==",
         status="submitted",
     )
-    fake_client.wait_for_inscription.return_value = InscriberJob(status="completed", completed=True)
+    fake_client.wait_for_inscription.return_value = InscriberJob(
+        status="completed",
+        completed=True,
+        topic_id="0.0.123",
+    )
     with patch("standards_sdk_py.inscriber.client._resolve_inscriber_client") as mock_client:
         with patch(
             "standards_sdk_py.inscriber.client._execute_inscriber_transaction"
@@ -260,3 +276,33 @@ def test_inscribe_waits_on_job_id_before_executed_transaction_id() -> None:
                 max_attempts=450,
                 interval_ms=4000,
             )
+            assert response.job_id == "0.0.123-1-2-3"
+            assert response.topic_id == "0.0.123"
+            assert response.hrl == "hcs://1/0.0.123"
+            assert response.network == "testnet"
+
+
+def test_inscribe_without_wait_populates_compatibility_fields() -> None:
+    fake_client = MagicMock()
+    fake_client.start_inscription.return_value = InscriberJob(
+        tx_id="0.0.123@1.2.3",
+        topic_id="0.0.456",
+        transactionBytes="dGVzdA==",
+        status="submitted",
+    )
+    with patch("standards_sdk_py.inscriber.client._resolve_inscriber_client") as mock_client:
+        with patch(
+            "standards_sdk_py.inscriber.client._execute_inscriber_transaction"
+        ) as mock_execute:
+            mock_client.return_value = fake_client
+            mock_execute.return_value = "0.0.123@9.8.7"
+            response = inscribe(
+                _input(),
+                HederaClientConfig(account_id="0.0.1", private_key="pk", network="testnet"),
+                InscriptionOptions(network="testnet", wait_for_confirmation=False),
+            )
+            assert response.confirmed is False
+            assert response.job_id == "0.0.123-1-2-3"
+            assert response.topic_id == "0.0.456"
+            assert response.hrl == "hcs://1/0.0.456"
+            assert response.network == "testnet"

@@ -1261,6 +1261,10 @@ class Hcs27Client(HcsModuleClient):
         names: tuple[str, ...],
     ) -> object:
         if args:
+            if isinstance(args[0], Mapping):
+                for name in names:
+                    if name in args[0]:
+                        return cast(Mapping[str, object], args[0])[name]
             return args[0]
         for name in names:
             if name in kwargs:
@@ -1277,7 +1281,12 @@ class Hcs27Client(HcsModuleClient):
                 "entries method expects at most one positional argument",
                 ErrorContext(),
             )
-        raw = args[0] if args else kwargs.get("entries")
+        raw = kwargs.get("entries")
+        if args:
+            if isinstance(args[0], Mapping) and "entries" in args[0]:
+                raw = cast(Mapping[str, object], args[0])["entries"]
+            else:
+                raw = args[0]
         if not isinstance(raw, list):
             raise ValidationError("entries must be a list", ErrorContext())
         return cast(list[object], raw)

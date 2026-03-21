@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic, sleep
 from typing import Literal, cast
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -979,6 +980,21 @@ def _execute_inscriber_transaction(
     return str(transaction_id) if transaction_id is not None else ""
 
 
+def _resolve_inscriber_auth_base_url(options: InscriptionOptions) -> str:
+    explicit_auth_base_url = (options.auth_base_url or "").strip().rstrip("/")
+    if explicit_auth_base_url:
+        return explicit_auth_base_url
+
+    base_url = (options.base_url or "").strip().rstrip("/")
+    if not base_url or base_url == DEFAULT_INSCRIBER_API_URL:
+        return DEFAULT_INSCRIBER_AUTH_URL
+
+    parsed = urlsplit(base_url)
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return DEFAULT_INSCRIBER_AUTH_URL
+
+
 def _resolve_inscriber_client(
     client_config: HederaClientConfig,
     options: InscriptionOptions,
@@ -988,9 +1004,7 @@ def _resolve_inscriber_client(
         return existing_client
     api_key = (options.api_key or "").strip()
     if not api_key:
-        auth_result = AuthClient(
-            base_url=options.auth_base_url or DEFAULT_INSCRIBER_AUTH_URL
-        ).authenticate(
+        auth_result = AuthClient(base_url=_resolve_inscriber_auth_base_url(options)).authenticate(
             client_config.account_id,
             client_config.private_key,
             options.network or client_config.network,
@@ -1073,6 +1087,7 @@ def _inscribe_with_inscriber(
         options,
     )
     job = client.start_inscription(request)
+    network = options.network or client_config.network
     if options.quote_only:
         quote = _parse_inscriber_quote(job)
         return InscriptionResponse(
@@ -1091,8 +1106,17 @@ def _inscribe_with_inscriber(
         "status": job.status,
         "completed": False,
     }
+    topic_reference = f"hcs://1/{job.topic_id}" if job.topic_id else None
     if not options.wait_for_confirmation:
-        return InscriptionResponse(confirmed=False, result=result)
+        return InscriptionResponse(
+            confirmed=False,
+            jobId=wait_id,
+            status=job.status,
+            hrl=topic_reference,
+            topicId=job.topic_id,
+            network=network,
+            result=result,
+        )
     waited = client.wait_for_inscription(
         wait_id,
         max_attempts=options.wait_max_attempts,
@@ -1101,8 +1125,15 @@ def _inscribe_with_inscriber(
     result["topicId"] = waited.topic_id or result["topicId"]
     result["status"] = waited.status or result["status"]
     result["completed"] = waited.completed
+    final_topic_id = waited.topic_id or job.topic_id
+    final_hrl = f"hcs://1/{final_topic_id}" if final_topic_id else None
     return InscriptionResponse(
         confirmed=waited.completed or (waited.status or "").lower() == "completed",
+        jobId=wait_id,
+        status=waited.status or job.status,
+        hrl=final_hrl,
+        topicId=final_topic_id,
+        network=network,
         result=result,
         inscription=waited.model_dump(by_alias=True, exclude_none=True),
     )
