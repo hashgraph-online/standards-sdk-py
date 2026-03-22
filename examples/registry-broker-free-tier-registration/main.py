@@ -70,8 +70,8 @@ def _create_client(api_key: str) -> RegistryBrokerClient:
     return RegistryBrokerClient(config=config)
 
 
-def _register_with_key(api_key: str, attempts: int) -> None:
-    print(f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts}")
+def _register_with_key(api_key: str, attempts: int, key_index: int) -> None:
+    print(f"\nTesting API key #{key_index + 1} attempts={attempts}")
     endpoint = os.getenv("REGISTRY_BROKER_DEMO_ENDPOINT", "").strip()
     if not endpoint:
         raise RuntimeError(
@@ -141,8 +141,8 @@ def main() -> None:
         DEFAULT_ATTEMPTS_PER_KEY,
     )
     api_keys = _extract_api_keys()
-    for key in api_keys:
-        _register_with_key(key, attempts)
+    for key_index, key in enumerate(api_keys):
+        _register_with_key(key, attempts, key_index)
 
 
 if __name__ == "__main__":

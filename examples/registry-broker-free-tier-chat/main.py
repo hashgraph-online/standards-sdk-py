@@ -91,7 +91,7 @@ def _set_chat_free_usage_seed(client: RegistryBrokerClient, account_id: str, cou
     )
 
 
-def _run_chat_attempts(api_key: str, attempts: int) -> None:
+def _run_chat_attempts(api_key: str, attempts: int, key_index: int) -> None:
     account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
     target_uaid = os.getenv("REGISTRY_BROKER_CHAT_TARGET_UAID", DEFAULT_CHAT_TARGET_UAID).strip()
     target_agent_url = os.getenv("REGISTRY_BROKER_CHAT_AGENT_URL", "").strip() or None
@@ -102,10 +102,7 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
     )
     seed_count = parse_non_negative_int(os.getenv("REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT"))
 
-    print(
-        f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts} "
-        f"timeout={timeout_seconds}s"
-    )
+    print(f"\nTesting API key #{key_index + 1} attempts={attempts} timeout={timeout_seconds}s")
     print(
         f"chat-target uaid={target_uaid} "
         f"agentUrl={target_agent_url or '<auto-resolve>'} "
@@ -182,9 +179,9 @@ def main() -> None:
         DEFAULT_ATTEMPTS_PER_KEY,
     )
     api_keys = _extract_api_keys()
-    for key in api_keys:
+    for key_index, key in enumerate(api_keys):
         try:
-            _run_chat_attempts(key, attempts)
+            _run_chat_attempts(key, attempts, key_index)
         except ApiError as error:
             print(f"key failed {format_api_error(error)}")
             continue

@@ -78,8 +78,8 @@ def main() -> None:
     )
     api_keys = _parse_optional_api_keys()
 
-    for api_key in api_keys:
-        label = f"{api_key[:6]}..." if api_key else "anonymous"
+    for key_index, api_key in enumerate(api_keys):
+        label = f"api-key-{key_index + 1}" if api_key else "anonymous"
         print(f"\nRoute probe mode={label}")
         client = _create_client(api_key or None)
         try:
