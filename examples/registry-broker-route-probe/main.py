@@ -1,0 +1,92 @@
+"""Registry Broker route probe demo.
+
+This demo targets the production Registry API by default and can be pointed to
+any broker base URL via environment variables.
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Any
+from urllib.parse import quote
+
+from standards_sdk_py import (
+    ApiError,
+    RegistryBrokerAuthConfig,
+    RegistryBrokerClient,
+    SdkConfig,
+    SdkNetworkConfig,
+)
+
+
+DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
+DEFAULT_MESSAGE = "Route probe from standards-sdk-py"
+DEFAULT_TARGET_UAIDS = [
+    "uaid:aid:9WADT6xgCjoT3XP4QCsfQdJwPn8RhXCufoHQcbKRTzdS6fTnmY4BxFKPrwjqkiT4aC",
+]
+
+
+def _parse_list_env(name: str, fallback: list[str]) -> list[str]:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return fallback
+    values = [value.strip() for value in raw.split(",")]
+    parsed = [value for value in values if value]
+    return parsed or fallback
+
+
+def _parse_optional_api_keys() -> list[str]:
+    raw = os.getenv("REGISTRY_BROKER_ROUTE_PROBE_API_KEYS", "").strip()
+    if not raw:
+        return [""]
+    values = [value.strip() for value in raw.split(",")]
+    parsed = [value for value in values if value]
+    return parsed or [""]
+
+
+def _create_client(api_key: str | None) -> RegistryBrokerClient:
+    base_url = os.getenv("REGISTRY_BROKER_BASE_URL", DEFAULT_REGISTRY_BASE_URL).strip()
+    account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
+    auth = RegistryBrokerAuthConfig(api_key=api_key, account_id=account_id)
+    config = SdkConfig(
+        network=SdkNetworkConfig(registry_broker_base_url=base_url),
+        registry_auth=auth,
+    )
+    return RegistryBrokerClient(config=config)
+
+
+def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[str, Any]:
+    path = f"/route/{quote(uaid, safe='')}"
+    return client.request_json(
+        path,
+        {
+            "method": "POST",
+            "body": {"message": message},
+        },
+    )
+
+
+def main() -> None:
+    uaids = _parse_list_env("REGISTRY_BROKER_ROUTE_PROBE_UAIDS", DEFAULT_TARGET_UAIDS)
+    message = os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip() or DEFAULT_MESSAGE
+    api_keys = _parse_optional_api_keys()
+
+    for api_key in api_keys:
+        label = f"{api_key[:6]}..." if api_key else "anonymous"
+        print(f"\nRoute probe mode={label}")
+        client = _create_client(api_key or None)
+        try:
+            for uaid in uaids:
+                try:
+                    payload = _probe_one(client, uaid, message)
+                    print(f"uaid={uaid} status=ok payload={payload}")
+                except ApiError as error:
+                    status_code = error.context.status_code
+                    body = error.context.body
+                    print(f"uaid={uaid} status=error code={status_code} body={body}")
+        finally:
+            client.close()
+
+
+if __name__ == "__main__":
+    main()

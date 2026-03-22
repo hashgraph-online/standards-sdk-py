@@ -8,6 +8,7 @@ flows. Each example maps to a supported HCS module or Registry Broker workflow.
 | `standards-sdk-discovery` | SDK Core | Registry Broker discovery (`search`, `stats`, `list_protocols`) |
 | `registry-broker-free-tier-registration` | Registry Broker | Live free-tier registration flow (`quote` + `register`) with API key auth |
 | `registry-broker-free-tier-chat` | Registry Broker | Live free-tier chat flow (`create_session` + `send_message`) with API key auth |
+| `registry-broker-route-probe` | Registry Broker | Live UAID route probe (`POST /route/:uaid`) for adapter/routing diagnostics |
 | `hcs2-create-registry` | [HCS-2](https://hol.org/docs/standards/hcs-2) | Builds typed HCS-2 registry + message payloads |
 | `hcs5-build-mint` | [HCS-5](https://hol.org/docs/standards/hcs-5) | Builds HCS-5 mint/hashinal payloads |
 | `hcs6-create-registry` | [HCS-6](https://hol.org/docs/standards/hcs-6) | Builds typed HCS-6 registry + register payloads |
@@ -56,6 +57,7 @@ Examples that construct HCS clients from operator credentials read these env var
 - [`standards-sdk-discovery`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/standards-sdk-discovery)
 - [`registry-broker-free-tier-registration`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-free-tier-registration)
 - [`registry-broker-free-tier-chat`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-free-tier-chat)
+- [`registry-broker-route-probe`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-route-probe)
 - [`hcs2-create-registry`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs2-create-registry)
 - [`hcs5-build-mint`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs5-build-mint)
 - [`hcs6-create-registry`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs6-create-registry)
