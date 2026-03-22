@@ -47,6 +47,8 @@ For Registry Broker free-tier demos:
 - `REGISTRY_BROKER_FREE_TIER_API_KEYS` for `registry-broker-free-tier-registration`
 - `REGISTRY_BROKER_FREE_TIER_CHAT_API_KEYS` for `registry-broker-free-tier-chat`
 - `REGISTRY_BROKER_DEMO_ENDPOINT` for `registry-broker-free-tier-registration` (must be a reachable agent endpoint)
+- `REGISTRY_BROKER_DEMO_PROTOCOL` for `registry-broker-free-tier-registration`
+  (`a2a` by default; set to match your endpoint protocol)
 
 ## Hedera Credentials
 
