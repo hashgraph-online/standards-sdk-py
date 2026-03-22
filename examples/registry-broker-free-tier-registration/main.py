@@ -18,7 +18,6 @@ from standards_sdk_py import (
     SdkNetworkConfig,
 )
 
-
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_REGISTRY_NAMESPACE = "hashgraph-online"
 DEFAULT_COMMUNICATION_PROTOCOL = "a2a"
@@ -103,7 +102,7 @@ def _register_with_key(api_key: str, attempts: int) -> None:
                 result = client.register_agent(payload)
             except ApiError as error:
                 if error.context.status_code == 402:
-                    print(f"attempt={attempt_index + 1} register status=402 body={error.context.body}")
+                    print(f"attempt={attempt_index + 1} register status=402")
                     continue
                 raise
 

@@ -18,7 +18,6 @@ from standards_sdk_py import (
     SdkNetworkConfig,
 )
 
-
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_MESSAGE = "Route probe from standards-sdk-py"
 DEFAULT_TARGET_UAIDS = [
@@ -70,7 +69,10 @@ def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[st
 
 def main() -> None:
     uaids = _parse_list_env("REGISTRY_BROKER_ROUTE_PROBE_UAIDS", DEFAULT_TARGET_UAIDS)
-    message = os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip() or DEFAULT_MESSAGE
+    message = (
+        os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip()
+        or DEFAULT_MESSAGE
+    )
     api_keys = _parse_optional_api_keys()
 
     for index, api_key in enumerate(api_keys, start=1):
@@ -85,8 +87,7 @@ def main() -> None:
                     print(f"uaid={uaid} status=ok payload={payload}")
                 except ApiError as error:
                     status_code = error.context.status_code
-                    body = error.context.body
-                    print(f"uaid={uaid} status=error code={status_code} body={body}")
+                    print(f"uaid={uaid} status=error code={status_code}")
         finally:
             client.close()
 

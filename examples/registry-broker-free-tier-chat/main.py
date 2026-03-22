@@ -7,7 +7,7 @@ Registry Broker instance by overriding environment variables at runtime.
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 from urllib.parse import quote
 
 from standards_sdk_py import (
@@ -17,12 +17,16 @@ from standards_sdk_py import (
     SdkNetworkConfig,
 )
 
-
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_CHAT_TARGET_UAID = (
     "uaid:aid:3AUoqGTHnMXv1PB8ATCtkB86Xw2uEEJuqMRNCirGQehhNhnQ1vHuwJfAh5K5Dp6RFE"
 )
 DEFAULT_ATTEMPTS_PER_KEY = 3
+
+
+@runtime_checkable
+class _SessionResponse(Protocol):
+    session_id: str | None
 
 
 def _parse_positive_int(value: str | None, fallback: int) -> int:
@@ -82,9 +86,9 @@ def _set_chat_free_usage_seed(client: RegistryBrokerClient, account_id: str, cou
     )
 
 
-def _session_id_from_response(response: Any) -> str:
-    if hasattr(response, "session_id"):
-        session_id = getattr(response, "session_id")
+def _session_id_from_response(response: object) -> str:
+    if isinstance(response, _SessionResponse):
+        session_id = response.session_id
         if isinstance(session_id, str) and session_id.strip():
             return session_id
     raise RuntimeError("Chat session response did not include session_id")
@@ -113,9 +117,11 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
                     _set_chat_free_usage_seed(client, account_id, parsed_seed_count)
                     seeded = _read_chat_free_usage(client, account_id)
                     if seeded:
+                        used = seeded.get("used")
+                        remaining = seeded.get("remaining")
+                        limit = seeded.get("limit")
                         print(
-                            f"usage-seeded used={seeded.get('used')} remaining={seeded.get('remaining')} "
-                            f"limit={seeded.get('limit')}"
+                            f"usage-seeded used={used} remaining={remaining} limit={limit}"
                         )
                 except ValueError:
                     print(
