@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "standards-sdk-py"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python SDK for Hedera standards and Registry Broker parity with TypeScript and Go SDKs."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -61,7 +61,7 @@ Libraries = "https://libraries.io/pypi/standards-sdk-py"
 
 [project.optional-dependencies]
 dev = [
-  "black>=24.10.0,<25.0.0",
+  "black>=26.3.1,<27.0.0",
   "mypy>=1.13.0,<2.0.0",
   "pre-commit>=4.0.1,<5.0.0",
   "pip-audit>=2.8.0,<3.0.0",
