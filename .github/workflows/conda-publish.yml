@@ -63,11 +63,17 @@ jobs:
   publish-anaconda:
     name: Publish to Anaconda
     needs: build-conda
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/standards-sdk-py-v')
     runs-on: ubuntu-latest
     env:
       ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       ANACONDA_OWNER: hashgraph-online
     steps:
+      - name: Require ANACONDA_API_TOKEN for tag releases
+        if: startsWith(github.ref, 'refs/tags/standards-sdk-py-v') && env.ANACONDA_API_TOKEN == ''
+        run: |
+          echo "ANACONDA_API_TOKEN is required for tag-driven conda release publishing."
+          exit 1
       - uses: conda-incubator/setup-miniconda@v3
         if: env.ANACONDA_API_TOKEN != ''
         with:
