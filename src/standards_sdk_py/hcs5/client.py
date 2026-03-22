@@ -29,6 +29,7 @@ from standards_sdk_py.shared.http import AsyncHttpTransport, SyncHttpTransport
 from standards_sdk_py.shared.types import JsonValue
 
 _DEFAULT_REGISTRY_BROKER_BASE_URL = "https://registry.hashgraphonline.com"
+_DEFAULT_INSCRIBER_BASE_URL = "https://v2-api.tier.bot/api"
 
 
 def _clean(value: object) -> str:
@@ -231,7 +232,7 @@ class Hcs5Client(HcsModuleClient):
             base_url=str(
                 inscription_options.get("baseUrl")
                 or inscription_options.get("base_url")
-                or _DEFAULT_REGISTRY_BROKER_BASE_URL
+                or _DEFAULT_INSCRIBER_BASE_URL
             ),
             api_key=cast(
                 str | None, inscription_options.get("apiKey") or inscription_options.get("api_key")

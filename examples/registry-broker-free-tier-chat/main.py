@@ -19,9 +19,11 @@ from standards_sdk_py import (
 from standards_sdk_py.registry_broker.demo_utils import (
     format_api_error,
     parse_non_negative_int,
+    parse_positive_float,
     parse_positive_int,
 )
 from standards_sdk_py.registry_broker.models import CreateSessionResponse, SendMessageResponse
+from standards_sdk_py.shared.http import SyncHttpTransport
 from standards_sdk_py.shared.types import JsonObject, JsonValue
 
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
@@ -29,6 +31,7 @@ DEFAULT_CHAT_TARGET_UAID = (
     "uaid:aid:3AUoqGTHnMXv1PB8ATCtkB86Xw2uEEJuqMRNCirGQehhNhnQ1vHuwJfAh5K5Dp6RFE"
 )
 DEFAULT_ATTEMPTS_PER_KEY = 3
+DEFAULT_TIMEOUT_SECONDS = 55.0
 
 
 def _extract_api_keys() -> list[str]:
@@ -46,13 +49,23 @@ def _extract_api_keys() -> list[str]:
     return api_keys
 
 
-def _create_client(api_key: str, account_id: str | None) -> RegistryBrokerClient:
+def _create_client(
+    api_key: str, account_id: str | None, timeout_seconds: float
+) -> RegistryBrokerClient:
     base_url = os.getenv("REGISTRY_BROKER_BASE_URL", DEFAULT_REGISTRY_BASE_URL).strip()
+    headers = {"x-api-key": api_key}
+    if account_id:
+        headers["x-account-id"] = account_id
     config = SdkConfig(
         network=SdkNetworkConfig(registry_broker_base_url=base_url),
         registry_auth=RegistryBrokerAuthConfig(api_key=api_key, account_id=account_id),
     )
-    return RegistryBrokerClient(config=config)
+    transport = SyncHttpTransport(
+        base_url=base_url,
+        headers=headers,
+        timeout_seconds=timeout_seconds,
+    )
+    return RegistryBrokerClient(config=config, transport=transport)
 
 
 def _read_chat_free_usage(
@@ -81,10 +94,21 @@ def _set_chat_free_usage_seed(client: RegistryBrokerClient, account_id: str, cou
 def _run_chat_attempts(api_key: str, attempts: int, key_index: int) -> None:
     account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
     target_uaid = os.getenv("REGISTRY_BROKER_CHAT_TARGET_UAID", DEFAULT_CHAT_TARGET_UAID).strip()
+    target_agent_url = os.getenv("REGISTRY_BROKER_CHAT_AGENT_URL", "").strip() or None
+    target_transport = os.getenv("REGISTRY_BROKER_CHAT_TRANSPORT", "").strip() or None
+    timeout_seconds = parse_positive_float(
+        os.getenv("REGISTRY_BROKER_TIMEOUT_SECONDS"),
+        DEFAULT_TIMEOUT_SECONDS,
+    )
     seed_count = parse_non_negative_int(os.getenv("REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT"))
 
-    print(f"\nTesting API key #{key_index + 1} attempts={attempts}")
-    client = _create_client(api_key, account_id)
+    print(f"\nTesting API key #{key_index + 1} attempts={attempts} timeout={timeout_seconds}s")
+    print(
+        f"chat-target uaid={target_uaid} "
+        f"agentUrl={target_agent_url or '<auto-resolve>'} "
+        f"transport={target_transport or '<auto-resolve>'}"
+    )
+    client = _create_client(api_key, account_id, timeout_seconds)
     try:
         if account_id:
             before = _read_chat_free_usage(client, account_id)
@@ -102,7 +126,13 @@ def _run_chat_attempts(api_key: str, attempts: int, key_index: int) -> None:
                         f"remaining={seeded.get('remaining')} limit={seeded.get('limit')}"
                     )
 
-        session_payload: JsonObject = {"uaid": target_uaid}
+        routing_extras: JsonObject = {}
+        if target_agent_url:
+            routing_extras["agentUrl"] = target_agent_url
+        if target_transport:
+            routing_extras["transport"] = target_transport
+
+        session_payload: JsonObject = {"uaid": target_uaid, **routing_extras}
         try:
             session: CreateSessionResponse = client.create_session(session_payload)
         except ApiError as error:
@@ -112,19 +142,17 @@ def _run_chat_attempts(api_key: str, attempts: int, key_index: int) -> None:
         print(f"session created sessionId={session_id}")
 
         for attempt_index in range(attempts):
+            message_payload: JsonObject = {
+                "sessionId": session_id,
+                "uaid": target_uaid,
+                "streaming": False,
+                "message": f"free-tier chat demo attempt {attempt_index + 1}",
+                **routing_extras,
+            }
+
             try:
-                response: SendMessageResponse = client.send_message(
-                    {
-                        "sessionId": session_id,
-                        "uaid": target_uaid,
-                        "streaming": False,
-                        "message": f"free-tier chat demo attempt {attempt_index + 1}",
-                    }
-                )
+                response: SendMessageResponse = client.send_message(message_payload)
             except ApiError as error:
-                if error.context.status_code == 402:
-                    print(f"attempt={attempt_index + 1} send " f"{format_api_error(error)}")
-                    continue
                 print(f"attempt={attempt_index + 1} send " f"{format_api_error(error)}")
                 continue
             response_session = response.session_id
@@ -152,7 +180,11 @@ def main() -> None:
     )
     api_keys = _extract_api_keys()
     for key_index, key in enumerate(api_keys):
-        _run_chat_attempts(key, attempts, key_index)
+        try:
+            _run_chat_attempts(key, attempts, key_index)
+        except ApiError as error:
+            print(f"key failed {format_api_error(error)}")
+            continue
 
 
 if __name__ == "__main__":

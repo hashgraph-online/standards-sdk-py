@@ -4,11 +4,14 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/standards_sdk_py)](https://pypi.org/project/standards-sdk-py/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/standards-sdk-py)](https://pypistats.org/packages/standards-sdk-py)
 [![Libraries.io Dependencies](https://img.shields.io/librariesio/release/pypi/standards-sdk-py)](https://libraries.io/pypi/standards-sdk-py)
+[![piwheels](https://img.shields.io/piwheels/v/standards-sdk-py?logo=raspberrypi)](https://www.piwheels.org/project/standards-sdk-py/)
 [![CI](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/ci.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/ci.yml)
 [![Security](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/security.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/security.yml)
 [![CodeQL](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/codeql.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/codeql.yml)
 [![Publish](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/publish.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/publish.yml)
 [![Conda Publish](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/conda-publish.yml/badge.svg)](https://github.com/hashgraph-online/standards-sdk-py/actions/workflows/conda-publish.yml)
+[![Anaconda Version](https://img.shields.io/conda/vn/hashgraph-online/standards-sdk-py?logo=anaconda&label=Anaconda)](https://anaconda.org/hashgraph-online/standards-sdk-py)
+[![Conda Downloads](https://img.shields.io/conda/dn/hashgraph-online/standards-sdk-py?logo=anaconda&label=Conda%20Downloads)](https://anaconda.org/hashgraph-online/standards-sdk-py)
 [![License](https://img.shields.io/github/license/hashgraph-online/standards-sdk-py)](./LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/hashgraph-online/standards-sdk-py?style=social)](https://github.com/hashgraph-online/standards-sdk-py/stargazers)
 [![CodeSandbox Examples](https://img.shields.io/badge/CodeSandbox-Examples-151515?logo=codesandbox&logoColor=white)](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples)
@@ -41,6 +44,7 @@ pip install standards-sdk-py
 conda install -c hashgraph-online standards-sdk-py
 ```
 
+
 ## Multi-Language SDK Links
 
 Canonical SDK docs URL: <https://hol.org/docs/libraries/standards-sdk/>
@@ -66,6 +70,7 @@ For standards and API documentation:
 - [Standards SDK Documentation](https://hol.org/docs/libraries/standards-sdk/)
 - [HCS Standards Documentation](https://hol.org/docs/standards)
 - [Libraries.io Package Page](https://libraries.io/pypi/standards-sdk-py)
+- [piwheels Package Page](https://www.piwheels.org/project/standards-sdk-py/)
 
 ## Citation and Archival
 
