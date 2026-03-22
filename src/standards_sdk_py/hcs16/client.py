@@ -48,7 +48,7 @@ from standards_sdk_py.shared.http import AsyncHttpTransport, SyncHttpTransport
 from standards_sdk_py.shared.types import JsonValue
 
 _DEFAULT_REGISTRY_BROKER_BASE_URL = "https://registry.hashgraphonline.com"
-_DEFAULT_INSCRIBER_BASE_URL = "https://hol.org/registry/api/v1"
+_DEFAULT_INSCRIBER_BASE_URL = "https://v2-api.tier.bot/api"
 _DEFAULT_INSCRIBER_TIMEOUT_MS = 120000
 _DEFAULT_INSCRIBER_POLL_INTERVAL_MS = 2000
 _TOPIC_ID_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")

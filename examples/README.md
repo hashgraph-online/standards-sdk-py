@@ -21,7 +21,7 @@ flows. Each example maps to a supported HCS module or Registry Broker workflow.
 | `hcs20-deploy-points` | [HCS-20](https://hol.org/docs/standards/hcs-20) | Builds typed HCS-20 points deployment payloads |
 | `hcs21-build-declaration` | [HCS-21](https://hol.org/docs/standards/hcs-21) | Builds typed HCS-21 adapter declaration payloads |
 | `hcs26-parse-memos` | [HCS-26](https://hol.org/docs/standards/hcs-26) | Builds + parses mocked HCS-26 topic/tx memos |
-| `hcs27-publish-checkpoint` | [HCS-27](https://hol.org/docs/standards/hcs-27) | Builds mocked HCS-27 checkpoint + Merkle helpers |
+| `hcs27-publish-checkpoint` | [HCS-27](https://hol.org/docs/standards/hcs-27) | Publishes inline + HRL-backed checkpoints and validates the chain |
 | `inscriber-auth-client` | Inscriber | Builds typed quote request/options for inscription flows |
 | `mirror-topic-messages` | Mirror Node | Reads mocked mirror topic messages and decoded payloads |
 | `registry-broker-skill-domain-proof` | Registry Broker | Domain proof challenge + verify workflow (mocked) |

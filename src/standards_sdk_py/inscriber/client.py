@@ -1,15 +1,18 @@
-"""Inscriber sync and async clients with Registry Broker workflows."""
+"""Inscriber clients and explicit Registry Broker workflows."""
 
 from __future__ import annotations
 
 import asyncio
 import base64
 import importlib
+import json
 import mimetypes
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic, sleep
-from typing import Literal
+from typing import Literal, cast
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -27,8 +30,13 @@ from standards_sdk_py.shared.types import JsonObject, JsonValue
 
 InscriptionInputType = Literal["url", "file", "buffer"]
 InscriptionMode = Literal["file", "upload", "hashinal", "hashinal-collection", "bulk-files"]
+ConnectionMode = Literal["http", "websocket", "auto"]
 
+DEFAULT_INSCRIBER_AUTH_URL = "https://kiloscribe.com"
+DEFAULT_INSCRIBER_API_URL = "https://v2-api.tier.bot/api"
 DEFAULT_REGISTRY_BROKER_URL = "https://hol.org/registry/api/v1"
+DEFAULT_INSCRIBER_TIMEOUT_MS = 120000
+DEFAULT_INSCRIBER_POLL_INTERVAL_MS = 2000
 DEFAULT_REGISTRY_TIMEOUT_MS = 120000
 DEFAULT_REGISTRY_POLL_INTERVAL_MS = 2000
 DEFAULT_REGISTRY_RETRY_COUNT = 3
@@ -162,13 +170,412 @@ class InscriptionResponse(BaseModel):
 
     confirmed: bool | None = None
     quote: bool | None = None
+    job_id: str | None = Field(default=None, alias="jobId")
+    status: str | None = None
+    hrl: str | None = None
+    topic_id: str | None = Field(default=None, alias="topicId")
+    network: str | None = None
+    error: str | None = None
+    created_at: str | None = Field(default=None, alias="createdAt")
+    updated_at: str | None = Field(default=None, alias="updatedAt")
     result: object | None = None
     inscription: object | None = None
+    cost_summary: object | None = Field(default=None, alias="costSummary")
+
+
+@dataclass(slots=True, frozen=True)
+class HederaClientConfig:
+    """Inscriber-compatible Hedera signer configuration."""
+
+    account_id: str
+    private_key: str
+    network: str = "mainnet"
+
+
+@dataclass(slots=True, frozen=True)
+class InscriptionOptions:
+    """Inscriber options."""
+
+    mode: InscriptionMode = "file"
+    websocket: bool | None = None
+    connection_mode: ConnectionMode | None = None
+    wait_for_confirmation: bool = True
+    wait_max_attempts: int = 450
+    wait_interval_ms: int = 4000
+    api_key: str | None = None
+    base_url: str | None = None
+    auth_base_url: str | None = None
+    tags: list[str] | None = None
+    metadata: dict[str, object] | None = None
+    json_file_url: str | None = None
+    file_standard: str | None = None
+    chunk_size: int | None = None
+    network: str | None = None
+    quote_only: bool = False
+
+
+class AuthResult(BaseModel):
+    """Inscriber auth response."""
+
+    api_key: str = Field(alias="apiKey")
+
+
+class InscriberQuoteTransfer(BaseModel):
+    """Inscriber quote transfer entry."""
+
+    to: str
+    amount: str
+    description: str
+
+
+class InscriberQuoteBreakdown(BaseModel):
+    """Inscriber quote breakdown."""
+
+    transfers: list[InscriberQuoteTransfer]
+
+
+class InscriberQuoteResult(BaseModel):
+    """Inscriber quote result."""
+
+    total_cost_hbar: str = Field(alias="totalCostHbar")
+    valid_until: str = Field(alias="validUntil")
+    breakdown: InscriberQuoteBreakdown
+
+
+class InscriberJob(BaseModel):
+    """Inscriber job."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str | None = None
+    status: str | None = None
+    completed: bool = False
+    tx_id: str | None = Field(default=None, alias="tx_id")
+    topic_id: str | None = Field(default=None, alias="topic_id")
+    transaction_id: str | None = Field(default=None, alias="transactionId")
+    transaction_bytes: str | None = Field(default=None, alias="transactionBytes")
+    error: str | None = None
+    total_cost: int | None = Field(default=None, alias="totalCost")
+    total_messages: int | None = Field(default=None, alias="totalMessages")
 
 
 def _guess_mime_type(file_name: str) -> str:
     guessed, _encoding = mimetypes.guess_type(file_name, strict=False)
     return guessed or "application/octet-stream"
+
+
+def _normalize_network(network: str) -> str:
+    aliases = {
+        "mainnet": "mainnet",
+        "hedera:mainnet": "mainnet",
+        "hedera-mainnet": "mainnet",
+        "hedera_mainnet": "mainnet",
+        "testnet": "testnet",
+        "hedera:testnet": "testnet",
+        "hedera-testnet": "testnet",
+        "hedera_testnet": "testnet",
+    }
+    normalized = aliases.get(network.strip().lower(), network.strip().lower())
+    if normalized not in {"mainnet", "testnet"}:
+        raise ValidationError(
+            "network must be testnet or mainnet",
+            ErrorContext(details={"network": network}),
+        )
+    return normalized
+
+
+def _normalize_inscriber_auth_url(base_url: str | None) -> str:
+    normalized = (base_url or DEFAULT_INSCRIBER_AUTH_URL).strip().rstrip("/")
+    if normalized.endswith("/api"):
+        normalized = normalized[: -len("/api")]
+    return normalized or DEFAULT_INSCRIBER_AUTH_URL
+
+
+def _normalize_inscriber_api_url(base_url: str | None) -> str:
+    normalized = (base_url or DEFAULT_INSCRIBER_API_URL).strip().rstrip("/")
+    if normalized.endswith("/api"):
+        return normalized
+    return f"{normalized}/api"
+
+
+def _resolve_connection_mode(options: InscriptionOptions) -> ConnectionMode:
+    if options.connection_mode is not None:
+        return options.connection_mode
+    if isinstance(options.websocket, bool):
+        return "websocket" if options.websocket else "http"
+    return "websocket"
+
+
+def _normalize_transaction_id(tx_id: str) -> str:
+    trimmed = tx_id.strip()
+    if "@" not in trimmed:
+        return trimmed
+    account_id, valid_start = trimmed.split("@", 1)
+    return f"{account_id}-{valid_start.replace('.', '-')}"
+
+
+def _normalize_transaction_bytes(raw_value: object) -> str:
+    if raw_value is None:
+        return ""
+    if isinstance(raw_value, str):
+        return raw_value
+    if isinstance(raw_value, Mapping):
+        type_value = raw_value.get("type")
+        data = raw_value.get("data")
+        if type_value != "Buffer" or not isinstance(data, list):
+            raise ParseError(
+                "unsupported transactionBytes object shape",
+                ErrorContext(details={"type": type_value}),
+            )
+        byte_values = bytearray()
+        for item in data:
+            if not isinstance(item, int | float):
+                raise ParseError(
+                    "transactionBytes Buffer object includes non-numeric data",
+                    ErrorContext(details={"value_type": type(item).__name__}),
+                )
+            byte_values.append(int(item))
+        return base64.b64encode(bytes(byte_values)).decode("utf-8")
+    raise ParseError(
+        "unsupported transactionBytes value",
+        ErrorContext(details={"value_type": type(raw_value).__name__}),
+    )
+
+
+def _normalize_auth_challenge(raw_message: object) -> tuple[str, JsonValue]:
+    if isinstance(raw_message, str):
+        normalized = raw_message.strip()
+        if not normalized:
+            raise ValidationError("signature challenge string cannot be empty", ErrorContext())
+        return normalized, normalized
+    try:
+        normalized = json.dumps(raw_message, separators=(",", ":"))
+        normalized_payload = cast(JsonValue, json.loads(normalized))
+    except Exception as exc:
+        raise ParseError(
+            "failed to normalize signature challenge",
+            ErrorContext(details={"reason": str(exc)}),
+        ) from exc
+    if not normalized:
+        raise ValidationError("signature challenge cannot be empty", ErrorContext())
+    return normalized, normalized_payload
+
+
+def _sign_inscriber_challenge(signing_payload: str, private_key: str) -> str:
+    try:
+        hedera_module = importlib.import_module("hedera")
+        key = hedera_module.PrivateKey.fromString(private_key.strip())
+    except ModuleNotFoundError as exc:
+        raise ValidationError(
+            "hedera-sdk-py is required for inscriber authentication",
+            ErrorContext(details={"dependency": "hedera-sdk-py"}),
+        ) from exc
+    except Exception as exc:
+        raise ValidationError(
+            "invalid Hedera private key for inscriber authentication",
+            ErrorContext(details={"reason": str(exc)}),
+        ) from exc
+    return bytes(key.sign(signing_payload.encode("utf-8"))).hex()
+
+
+def _build_inscriber_request_body(
+    input_payload: InscriptionInput,
+    holder_id: str,
+    network: str,
+    options: InscriptionOptions,
+) -> JsonObject:
+    body: JsonObject = {
+        "holderId": holder_id,
+        "mode": options.mode,
+        "network": network,
+    }
+    if options.metadata:
+        body["metadata"] = cast(JsonObject, options.metadata)
+    if options.tags:
+        body["tags"] = cast(JsonValue, options.tags)
+    if options.chunk_size:
+        body["chunkSize"] = options.chunk_size
+    if options.file_standard:
+        body["fileStandard"] = options.file_standard
+    if options.json_file_url:
+        body["jsonFileURL"] = options.json_file_url
+
+    if input_payload.type == "url":
+        if not input_payload.url or not input_payload.url.strip():
+            raise ValidationError("input.url is required for url input type", ErrorContext())
+        body["fileURL"] = input_payload.url.strip()
+        return body
+
+    if input_payload.type == "file":
+        if not input_payload.path:
+            raise ValidationError("input.path is required for file input type", ErrorContext())
+        file_path = Path(input_payload.path)
+        if not file_path.exists():
+            raise ValidationError(
+                "input.path does not exist",
+                ErrorContext(details={"path": str(file_path)}),
+            )
+        content = file_path.read_bytes()
+        body["fileBase64"] = base64.b64encode(content).decode("utf-8")
+        body["fileName"] = file_path.name
+        body["fileMimeType"] = _guess_mime_type(file_path.name)
+        return body
+
+    if input_payload.type == "buffer":
+        if not input_payload.buffer:
+            raise ValidationError("input.buffer is required for buffer input type", ErrorContext())
+        if not input_payload.file_name:
+            raise ValidationError(
+                "input.fileName is required for buffer input type", ErrorContext()
+            )
+        body["fileBase64"] = base64.b64encode(input_payload.buffer).decode("utf-8")
+        body["fileName"] = input_payload.file_name
+        mime_type = input_payload.mime_type or _guess_mime_type(input_payload.file_name)
+        if mime_type:
+            body["fileMimeType"] = mime_type
+        return body
+
+    raise ValidationError(
+        "input.type must be one of: url, file, buffer",
+        ErrorContext(details={"input_type": input_payload.type}),
+    )
+
+
+def _parse_inscriber_job(raw: JsonValue) -> InscriberJob:
+    if not isinstance(raw, dict):
+        raise ParseError(
+            "failed to parse inscription job",
+            ErrorContext(details={"payload_type": type(raw).__name__}),
+        )
+    payload = dict(raw)
+    payload["transactionBytes"] = _normalize_transaction_bytes(raw.get("transactionBytes"))
+    return InscriberJob.model_validate(payload)
+
+
+def _parse_inscriber_quote(job: InscriberJob) -> InscriberQuoteResult:
+    total_cost_hbar = "0.001"
+    total_cost = job.total_cost or 0
+    if total_cost > 0:
+        total_cost_hbar = format(total_cost / 100_000_000, "g")
+    return InscriberQuoteResult(
+        totalCostHbar=total_cost_hbar,
+        validUntil="",
+        breakdown=InscriberQuoteBreakdown(
+            transfers=[
+                InscriberQuoteTransfer(
+                    to="Inscription Service",
+                    amount=total_cost_hbar,
+                    description="Inscription fee",
+                )
+            ]
+        ),
+    )
+
+
+def _coerce_hedera_client_config(value: object) -> HederaClientConfig:
+    if isinstance(value, HederaClientConfig):
+        return value
+    if isinstance(value, Mapping):
+        account_id = str(value.get("accountId", value.get("account_id", ""))).strip()
+        private_key = str(value.get("privateKey", value.get("private_key", ""))).strip()
+        network = str(value.get("network", "mainnet")).strip() or "mainnet"
+        if not account_id:
+            raise ValidationError("accountId is required", ErrorContext())
+        if not private_key:
+            raise ValidationError("privateKey is required", ErrorContext())
+        return HederaClientConfig(
+            account_id=account_id,
+            private_key=private_key,
+            network=_normalize_network(network),
+        )
+    raise ValidationError(
+        "client config must be a HederaClientConfig or mapping",
+        ErrorContext(details={"type": type(value).__name__}),
+    )
+
+
+def _coerce_inscription_options(value: object | None) -> InscriptionOptions:
+    if value is None:
+        return InscriptionOptions()
+    if isinstance(value, InscriptionOptions):
+        return value
+    if isinstance(value, Mapping):
+        payload = dict(value)
+        return InscriptionOptions(
+            mode=cast(InscriptionMode, payload.get("mode", "file")),
+            websocket=cast(bool | None, payload.get("websocket")),
+            connection_mode=cast(
+                ConnectionMode | None, payload.get("connectionMode", payload.get("connection_mode"))
+            ),
+            wait_for_confirmation=bool(
+                payload.get("waitForConfirmation", payload.get("wait_for_confirmation", True))
+            ),
+            wait_max_attempts=int(
+                payload.get("waitMaxAttempts", payload.get("wait_max_attempts", 450))
+            ),
+            wait_interval_ms=int(
+                payload.get("waitIntervalMs", payload.get("wait_interval_ms", 4000))
+            ),
+            api_key=cast(str | None, payload.get("apiKey", payload.get("api_key"))),
+            base_url=cast(
+                str | None, payload.get("baseUrl", payload.get("baseURL", payload.get("base_url")))
+            ),
+            auth_base_url=cast(
+                str | None, payload.get("authBaseURL", payload.get("auth_base_url"))
+            ),
+            tags=cast(list[str] | None, payload.get("tags")),
+            metadata=cast(dict[str, object] | None, payload.get("metadata")),
+            json_file_url=cast(
+                str | None, payload.get("jsonFileURL", payload.get("json_file_url"))
+            ),
+            file_standard=cast(
+                str | None, payload.get("fileStandard", payload.get("file_standard"))
+            ),
+            chunk_size=cast(int | None, payload.get("chunkSize", payload.get("chunk_size"))),
+            network=cast(str | None, payload.get("network")),
+            quote_only=bool(payload.get("quoteOnly", payload.get("quote_only", False))),
+        )
+    raise ValidationError(
+        "inscription options must be an InscriptionOptions or mapping",
+        ErrorContext(details={"type": type(value).__name__}),
+    )
+
+
+def _coerce_legacy_inscriber_inputs(
+    options: InscribeViaRegistryBrokerOptions,
+) -> tuple[HederaClientConfig, InscriptionOptions]:
+    account_id = (options.ledger_account_id or "").strip()
+    private_key = (options.ledger_private_key or "").strip()
+    if not account_id or not private_key:
+        raise ValidationError(
+            "ledger_account_id and ledger_private_key are required for inscriber operations",
+            ErrorContext(),
+        )
+    normalized_base_url = (options.base_url or "").strip().rstrip("/")
+    use_direct_base_url = (
+        normalized_base_url
+        and normalized_base_url != DEFAULT_REGISTRY_BROKER_URL
+        and "/registry/api/" not in normalized_base_url
+    )
+    client_config = HederaClientConfig(
+        account_id=account_id,
+        private_key=private_key,
+        network=_normalize_network(options.ledger_network or "mainnet"),
+    )
+    inscription_options = InscriptionOptions(
+        mode=options.mode,
+        wait_for_confirmation=options.wait_for_confirmation,
+        wait_interval_ms=options.poll_interval_ms,
+        wait_max_attempts=max(options.wait_timeout_ms // max(options.poll_interval_ms, 1), 1),
+        api_key=(options.api_key or options.ledger_api_key) if use_direct_base_url else None,
+        base_url=normalized_base_url if use_direct_base_url else None,
+        metadata=options.metadata,
+        tags=options.tags,
+        file_standard=options.file_standard,
+        chunk_size=options.chunk_size,
+        network=client_config.network,
+    )
+    return client_config, inscription_options
 
 
 def _is_transient_registry_error(exc: Exception) -> bool:
@@ -412,6 +819,324 @@ def authenticate_with_ledger_credentials(
         transport.close()
 
     return verification.key
+
+
+class AuthClient:
+    """Inscriber authentication client."""
+
+    def __init__(
+        self,
+        *,
+        base_url: str = DEFAULT_INSCRIBER_AUTH_URL,
+        transport: SyncHttpTransport | None = None,
+    ) -> None:
+        normalized_base_url = _normalize_inscriber_auth_url(base_url)
+        self._transport = transport or SyncHttpTransport(
+            base_url=normalized_base_url,
+            timeout_seconds=DEFAULT_INSCRIBER_TIMEOUT_MS / 1000.0,
+        )
+
+    def authenticate(self, account_id: str, private_key: str, network: str) -> AuthResult:
+        normalized_account_id = account_id.strip()
+        normalized_network = _normalize_network(network)
+        challenge_raw = self._transport.request_json(
+            "GET",
+            "/api/auth/request-signature",
+            headers={"x-session": normalized_account_id},
+        )
+        if not isinstance(challenge_raw, dict) or "message" not in challenge_raw:
+            raise ParseError("signature challenge did not include message", ErrorContext())
+        signing_payload, auth_data_value = _normalize_auth_challenge(challenge_raw["message"])
+        signature_hex = _sign_inscriber_challenge(signing_payload, private_key)
+        auth_raw = self._transport.request_json(
+            "POST",
+            "/api/auth/authenticate",
+            body={
+                "authData": {
+                    "id": normalized_account_id,
+                    "signature": signature_hex,
+                    "data": auth_data_value,
+                    "network": normalized_network,
+                },
+                "include": "apiKey",
+            },
+            headers={"content-type": "application/json"},
+        )
+        if not isinstance(auth_raw, dict):
+            raise ParseError("failed to decode inscriber auth response", ErrorContext())
+        user_value = auth_raw.get("user")
+        session_token = user_value.get("sessionToken") if isinstance(user_value, dict) else None
+        result = AuthResult.model_validate(auth_raw)
+        if not isinstance(session_token, str) or not session_token.strip():
+            raise ParseError("authenticate response did not include session token", ErrorContext())
+        if not result.api_key.strip():
+            raise ParseError("authenticate response did not include api key", ErrorContext())
+        return result
+
+
+class Client:
+    """Inscriber HTTP client."""
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        network: str,
+        base_url: str = DEFAULT_INSCRIBER_API_URL,
+        transport: SyncHttpTransport | None = None,
+    ) -> None:
+        if not api_key.strip():
+            raise ValidationError("API key is required", ErrorContext())
+        self.network = _normalize_network(network)
+        normalized_base_url = _normalize_inscriber_api_url(base_url)
+        self._transport = transport or SyncHttpTransport(
+            base_url=normalized_base_url,
+            headers={"x-api-key": api_key.strip()},
+            timeout_seconds=DEFAULT_INSCRIBER_TIMEOUT_MS / 1000.0,
+        )
+
+    def start_inscription(self, request: JsonObject) -> InscriberJob:
+        raw = self._transport.request_json(
+            "POST",
+            "/inscriptions/start-inscription",
+            body=request,
+        )
+        return _parse_inscriber_job(raw)
+
+    def retrieve_inscription(self, transaction_id: str) -> InscriberJob:
+        normalized_transaction_id = _normalize_transaction_id(transaction_id)
+        if not normalized_transaction_id:
+            raise ValidationError("transaction ID is required", ErrorContext())
+        raw = self._transport.request_json(
+            "GET",
+            "/inscriptions/retrieve-inscription",
+            query={"id": normalized_transaction_id},
+        )
+        return _parse_inscriber_job(raw)
+
+    def wait_for_inscription(
+        self,
+        transaction_id: str,
+        *,
+        max_attempts: int,
+        interval_ms: int,
+    ) -> InscriberJob:
+        attempts = max(max_attempts, 1)
+        wait_interval_ms = max(interval_ms, 1)
+        latest: InscriberJob | None = None
+        for _attempt in range(attempts):
+            latest = self.retrieve_inscription(transaction_id)
+            status = (latest.status or "").lower()
+            if latest.completed or status == "completed":
+                latest.completed = True
+                return latest
+            if status == "failed":
+                raise ValidationError(latest.error or "inscription failed", ErrorContext())
+            sleep(wait_interval_ms / 1000.0)
+        if latest is None:
+            raise ValidationError("inscription status was never fetched", ErrorContext())
+        raise ValidationError("inscription did not complete before timeout", ErrorContext())
+
+
+def _execute_inscriber_transaction(
+    transaction_bytes: str,
+    client_config: HederaClientConfig,
+) -> str:
+    try:
+        hedera_module = importlib.import_module("hedera")
+    except ModuleNotFoundError as exc:
+        raise ValidationError(
+            "hedera-sdk-py is required for inscriber operations",
+            ErrorContext(details={"dependency": "hedera-sdk-py"}),
+        ) from exc
+    try:
+        private_key = hedera_module.PrivateKey.fromString(client_config.private_key.strip())
+        account_id = hedera_module.AccountId.fromString(client_config.account_id.strip())
+        client = (
+            hedera_module.Client.forMainnet()
+            if _normalize_network(client_config.network) == "mainnet"
+            else hedera_module.Client.forTestnet()
+        )
+        client.setOperator(account_id, private_key)
+        transaction = hedera_module.Transaction.fromBytes(base64.b64decode(transaction_bytes))
+    except Exception as exc:
+        raise ValidationError(
+            "failed to prepare inscriber transaction",
+            ErrorContext(details={"reason": str(exc)}),
+        ) from exc
+    try:
+        response = transaction.execute(client)
+    except Exception:
+        try:
+            signed = hedera_module.Transaction.fromBytes(base64.b64decode(transaction_bytes))
+            signed.sign(private_key)
+            response = signed.execute(client)
+        except Exception as exc:
+            raise TransportError(
+                "failed to execute inscriber transaction",
+                ErrorContext(details={"reason": str(exc)}),
+            ) from exc
+    transaction_id = getattr(response, "transactionId", None)
+    return str(transaction_id) if transaction_id is not None else ""
+
+
+def _resolve_inscriber_auth_base_url(options: InscriptionOptions) -> str:
+    explicit_auth_base_url = (options.auth_base_url or "").strip().rstrip("/")
+    if explicit_auth_base_url:
+        return explicit_auth_base_url
+
+    base_url = (options.base_url or "").strip().rstrip("/")
+    if not base_url or base_url == DEFAULT_INSCRIBER_API_URL:
+        return DEFAULT_INSCRIBER_AUTH_URL
+
+    parsed = urlsplit(base_url)
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return DEFAULT_INSCRIBER_AUTH_URL
+
+
+def _resolve_inscriber_client(
+    client_config: HederaClientConfig,
+    options: InscriptionOptions,
+    existing_client: Client | None,
+) -> Client:
+    if existing_client is not None:
+        return existing_client
+    api_key = (options.api_key or "").strip()
+    if not api_key:
+        auth_result = AuthClient(base_url=_resolve_inscriber_auth_base_url(options)).authenticate(
+            client_config.account_id,
+            client_config.private_key,
+            options.network or client_config.network,
+        )
+        api_key = auth_result.api_key
+    return Client(
+        api_key=api_key,
+        network=options.network or client_config.network,
+        base_url=options.base_url or DEFAULT_INSCRIBER_API_URL,
+    )
+
+
+def _resolve_readonly_inscriber_client(options: InscriptionOptions) -> Client:
+    api_key = (options.api_key or "").strip()
+    network = (options.network or "").strip()
+    if not api_key:
+        raise ValidationError("apiKey is required", ErrorContext())
+    if not network:
+        raise ValidationError("network is required", ErrorContext())
+    return Client(
+        api_key=api_key,
+        network=network,
+        base_url=options.base_url or DEFAULT_INSCRIBER_API_URL,
+    )
+
+
+def _uses_hedera_credentials_payload(payload: Mapping[str, object]) -> bool:
+    if "clientConfig" in payload:
+        return True
+    account_id = str(payload.get("accountId", payload.get("account_id", ""))).strip()
+    private_key = str(payload.get("privateKey", payload.get("private_key", ""))).strip()
+    return bool(account_id and private_key)
+
+
+def _uses_legacy_broker_flow(options: InscribeViaRegistryBrokerOptions) -> bool:
+    account_id = (options.ledger_account_id or "").strip()
+    private_key = (options.ledger_private_key or "").strip()
+    return not account_id or not private_key
+
+
+def _broker_job_to_inscriber_job(job: BrokerJobResponse) -> InscriberJob:
+    status = job.status or ""
+    return InscriberJob(
+        id=job.job_id or job.id,
+        status=status,
+        completed=status.lower() == "completed",
+        topic_id=job.topic_id,
+        error=job.error,
+    )
+
+
+def _broker_quote_to_inscriber_quote(quote: BrokerQuoteResponse) -> InscriberQuoteResult:
+    total_cost_hbar = str(quote.total_cost_hbar if quote.total_cost_hbar is not None else 0)
+    return InscriberQuoteResult(
+        totalCostHbar=total_cost_hbar,
+        validUntil=quote.expires_at or "",
+        breakdown=InscriberQuoteBreakdown(
+            transfers=[
+                InscriberQuoteTransfer(
+                    to="Registry Broker",
+                    amount=total_cost_hbar,
+                    description=quote.mode or "Inscription fee",
+                )
+            ]
+        ),
+    )
+
+
+def _inscribe_with_inscriber(
+    input_payload: InscriptionInput,
+    client_config: HederaClientConfig,
+    options: InscriptionOptions,
+    existing_client: Client | None = None,
+) -> InscriptionResponse:
+    client = _resolve_inscriber_client(client_config, options, existing_client)
+    request = _build_inscriber_request_body(
+        input_payload,
+        client_config.account_id,
+        options.network or client_config.network,
+        options,
+    )
+    job = client.start_inscription(request)
+    network = options.network or client_config.network
+    if options.quote_only:
+        quote = _parse_inscriber_quote(job)
+        return InscriptionResponse(
+            confirmed=False, quote=True, result=quote.model_dump(by_alias=True)
+        )
+    if not job.transaction_bytes:
+        raise ParseError("inscription start did not return transaction bytes", ErrorContext())
+    executed_transaction_id = _execute_inscriber_transaction(job.transaction_bytes, client_config)
+    wait_id = _normalize_transaction_id(
+        job.tx_id or job.id or job.transaction_id or executed_transaction_id
+    )
+    result = {
+        "jobId": wait_id,
+        "transactionId": _normalize_transaction_id(executed_transaction_id),
+        "topicId": job.topic_id,
+        "status": job.status,
+        "completed": False,
+    }
+    topic_reference = f"hcs://1/{job.topic_id}" if job.topic_id else None
+    if not options.wait_for_confirmation:
+        return InscriptionResponse(
+            confirmed=False,
+            jobId=wait_id,
+            status=job.status,
+            hrl=topic_reference,
+            topicId=job.topic_id,
+            network=network,
+            result=result,
+        )
+    waited = client.wait_for_inscription(
+        wait_id,
+        max_attempts=options.wait_max_attempts,
+        interval_ms=options.wait_interval_ms,
+    )
+    result["topicId"] = waited.topic_id or result["topicId"]
+    result["status"] = waited.status or result["status"]
+    result["completed"] = waited.completed
+    final_topic_id = waited.topic_id or job.topic_id
+    final_hrl = f"hcs://1/{final_topic_id}" if final_topic_id else None
+    return InscriptionResponse(
+        confirmed=waited.completed or (waited.status or "").lower() == "completed",
+        jobId=wait_id,
+        status=waited.status or job.status,
+        hrl=final_hrl,
+        topicId=final_topic_id,
+        network=network,
+        result=result,
+        inscription=waited.model_dump(by_alias=True, exclude_none=True),
+    )
 
 
 class BrokerInscriberClient:
@@ -746,6 +1471,15 @@ class InscriberClient:
         raw = self._broker_client.call_operation("publish_skill", body=payload)
         return InscriptionResponse(confirmed=False, result=raw)
 
+    def inscribe(
+        self,
+        input_payload: InscriptionInput,
+        client_config: HederaClientConfig,
+        options: InscriptionOptions,
+        existing_client: Client | None = None,
+    ) -> InscriptionResponse:
+        return _inscribe_with_inscriber(input_payload, client_config, options, existing_client)
+
 
 class AsyncInscriberClient:
     """Asynchronous inscriber client."""
@@ -813,6 +1547,56 @@ class AsyncInscriberClient:
         raw = await self._broker_client.call_operation("publish_skill", body=payload)
         return InscriptionResponse(confirmed=False, result=raw)
 
+    async def inscribe(
+        self,
+        input_payload: InscriptionInput,
+        client_config: HederaClientConfig,
+        options: InscriptionOptions,
+        existing_client: Client | None = None,
+    ) -> InscriptionResponse:
+        return await asyncio.to_thread(
+            _inscribe_with_inscriber,
+            input_payload,
+            client_config,
+            options,
+            existing_client,
+        )
+
+
+def _resolve_inscriber_invocation(
+    client_config_or_options: object,
+    options: object | None,
+) -> tuple[HederaClientConfig, InscriptionOptions]:
+    if isinstance(client_config_or_options, InscribeViaRegistryBrokerOptions):
+        if options is not None:
+            raise ValidationError(
+                "legacy inscribe invocation does not accept a third positional options argument",
+                ErrorContext(),
+            )
+        return _coerce_legacy_inscriber_inputs(client_config_or_options)
+    client_config = _coerce_hedera_client_config(client_config_or_options)
+    inscription_options = _coerce_inscription_options(options)
+    if inscription_options.network is None:
+        inscription_options = InscriptionOptions(
+            mode=inscription_options.mode,
+            websocket=inscription_options.websocket,
+            connection_mode=inscription_options.connection_mode,
+            wait_for_confirmation=inscription_options.wait_for_confirmation,
+            wait_max_attempts=inscription_options.wait_max_attempts,
+            wait_interval_ms=inscription_options.wait_interval_ms,
+            api_key=inscription_options.api_key,
+            base_url=inscription_options.base_url,
+            auth_base_url=inscription_options.auth_base_url,
+            tags=inscription_options.tags,
+            metadata=inscription_options.metadata,
+            json_file_url=inscription_options.json_file_url,
+            file_standard=inscription_options.file_standard,
+            chunk_size=inscription_options.chunk_size,
+            network=client_config.network,
+            quote_only=inscription_options.quote_only,
+        )
+    return client_config, inscription_options
+
 
 def get_registry_broker_quote(
     input_payload: InscriptionInput,
@@ -834,70 +1618,166 @@ def inscribe_via_registry_broker(
 
 def inscribe(
     input_payload: InscriptionInput,
-    options: InscribeViaRegistryBrokerOptions,
-) -> InscribeViaBrokerResult:
-    """Top-level inscribe helper with parity to TypeScript `inscribe`."""
+    client_config_or_options: (
+        HederaClientConfig | InscribeViaRegistryBrokerOptions | Mapping[str, object]
+    ),
+    options: InscriptionOptions | Mapping[str, object] | None = None,
+    existing_client: Client | None = None,
+) -> InscriptionResponse:
+    """Top-level inscribe helper with legacy two-argument support."""
 
-    return inscribe_via_registry_broker(input_payload, options)
+    if isinstance(
+        client_config_or_options, InscribeViaRegistryBrokerOptions
+    ) and _uses_legacy_broker_flow(client_config_or_options):
+        result = inscribe_via_registry_broker(input_payload, client_config_or_options)
+        return InscriptionResponse(
+            confirmed=result.confirmed,
+            jobId=result.job_id,
+            status=result.status,
+            hrl=result.hrl,
+            topicId=result.topic_id,
+            network=result.network,
+            error=result.error,
+            createdAt=result.created_at,
+            updatedAt=result.updated_at,
+            result=result.model_dump(by_alias=True, exclude_none=True),
+        )
+    client_config, inscription_options = _resolve_inscriber_invocation(
+        client_config_or_options,
+        options,
+    )
+    return _inscribe_with_inscriber(
+        input_payload,
+        client_config,
+        inscription_options,
+        existing_client,
+    )
 
 
 def inscribe_with_signer(
     input_payload: InscriptionInput,
-    options: InscribeViaRegistryBrokerOptions,
+    client_config_or_options: (
+        HederaClientConfig | InscribeViaRegistryBrokerOptions | Mapping[str, object]
+    ),
+    options: InscriptionOptions | Mapping[str, object] | None = None,
     *,
     signer: object | None = None,
-) -> InscribeViaBrokerResult:
+) -> InscriptionResponse:
     """Parity wrapper for TypeScript `inscribeWithSigner`."""
 
     del signer
-    return inscribe_via_registry_broker(input_payload, options)
+    return inscribe(input_payload, client_config_or_options, options)
 
 
 def retrieve_inscription(
-    job_id: str,
-    options: InscribeViaRegistryBrokerOptions,
-) -> BrokerJobResponse:
-    """Fetch a Registry Broker inscription job by ID."""
+    transaction_id: str,
+    options: InscribeViaRegistryBrokerOptions | Mapping[str, object],
+) -> InscriberJob:
+    """Fetch an inscription job by transaction ID."""
 
-    client = BrokerInscriberClient(
-        base_url=options.base_url,
-        api_key=_resolve_api_key(options),
-    )
-    return client.get_job(job_id)
+    if isinstance(options, InscribeViaRegistryBrokerOptions):
+        if _uses_legacy_broker_flow(options):
+            broker_client = BrokerInscriberClient(
+                base_url=options.base_url,
+                api_key=_resolve_api_key(options),
+            )
+            return _broker_job_to_inscriber_job(broker_client.get_job(transaction_id))
+        client_config, inscription_options = _coerce_legacy_inscriber_inputs(options)
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+        return inscriber_client.retrieve_inscription(transaction_id)
+
+    payload = options
+    if _uses_hedera_credentials_payload(payload):
+        client_config = _coerce_hedera_client_config(payload.get("clientConfig", payload))
+        inscription_options = _coerce_inscription_options(payload.get("options", payload))
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+    else:
+        inscriber_client = _resolve_readonly_inscriber_client(_coerce_inscription_options(payload))
+    return inscriber_client.retrieve_inscription(transaction_id)
 
 
 def wait_for_inscription_confirmation(
-    job_id: str,
-    options: InscribeViaRegistryBrokerOptions,
-) -> InscribeViaBrokerResult:
-    """Wait for inscription completion and normalize result shape."""
+    transaction_id: str,
+    options: InscribeViaRegistryBrokerOptions | Mapping[str, object],
+) -> InscriberJob:
+    """Wait for inscription completion."""
 
-    client = BrokerInscriberClient(
-        base_url=options.base_url,
-        api_key=_resolve_api_key(options),
-    )
-    final = client.wait_for_job(
-        job_id,
-        timeout_ms=options.wait_timeout_ms,
-        poll_interval_ms=options.poll_interval_ms,
-    )
-    return InscribeViaBrokerResult(
-        confirmed=(final.status or "").lower() == "completed",
-        jobId=job_id,
-        status=final.status or "unknown",
-        hrl=final.hrl,
-        topicId=final.topic_id,
-        network=final.network,
-        error=final.error,
-        createdAt=final.created_at,
-        updatedAt=final.updated_at,
+    if isinstance(options, InscribeViaRegistryBrokerOptions):
+        if _uses_legacy_broker_flow(options):
+            broker_client = BrokerInscriberClient(
+                base_url=options.base_url,
+                api_key=_resolve_api_key(options),
+            )
+            result = broker_client.wait_for_job(
+                transaction_id,
+                timeout_ms=options.wait_timeout_ms,
+                poll_interval_ms=options.poll_interval_ms,
+            )
+            return _broker_job_to_inscriber_job(result)
+        client_config, inscription_options = _coerce_legacy_inscriber_inputs(options)
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+        return inscriber_client.wait_for_inscription(
+            transaction_id,
+            max_attempts=inscription_options.wait_max_attempts,
+            interval_ms=inscription_options.wait_interval_ms,
+        )
+
+    payload = options
+    if _uses_hedera_credentials_payload(payload):
+        client_config = _coerce_hedera_client_config(payload.get("clientConfig", payload))
+        inscription_options = _coerce_inscription_options(payload.get("options", payload))
+        inscriber_client = _resolve_inscriber_client(client_config, inscription_options, None)
+    else:
+        inscription_options = _coerce_inscription_options(payload)
+        inscriber_client = _resolve_readonly_inscriber_client(inscription_options)
+    return inscriber_client.wait_for_inscription(
+        transaction_id,
+        max_attempts=inscription_options.wait_max_attempts,
+        interval_ms=inscription_options.wait_interval_ms,
     )
 
 
 def generate_quote(
     input_payload: InscriptionInput,
-    options: InscribeViaRegistryBrokerOptions,
-) -> BrokerQuoteResponse:
+    client_config_or_options: (
+        HederaClientConfig | InscribeViaRegistryBrokerOptions | Mapping[str, object]
+    ),
+    options: InscriptionOptions | Mapping[str, object] | None = None,
+    existing_client: Client | None = None,
+) -> InscriberQuoteResult:
     """Top-level quote helper matching TypeScript `generateQuote`."""
 
-    return get_registry_broker_quote(input_payload, options)
+    if isinstance(
+        client_config_or_options, InscribeViaRegistryBrokerOptions
+    ) and _uses_legacy_broker_flow(client_config_or_options):
+        quote = get_registry_broker_quote(input_payload, client_config_or_options)
+        return _broker_quote_to_inscriber_quote(quote)
+    client_config, inscription_options = _resolve_inscriber_invocation(
+        client_config_or_options,
+        options,
+    )
+    quote_options = InscriptionOptions(
+        mode=inscription_options.mode,
+        websocket=inscription_options.websocket,
+        connection_mode=inscription_options.connection_mode,
+        wait_for_confirmation=False,
+        wait_max_attempts=inscription_options.wait_max_attempts,
+        wait_interval_ms=inscription_options.wait_interval_ms,
+        api_key=inscription_options.api_key,
+        base_url=inscription_options.base_url,
+        auth_base_url=inscription_options.auth_base_url,
+        tags=inscription_options.tags,
+        metadata=inscription_options.metadata,
+        json_file_url=inscription_options.json_file_url,
+        file_standard=inscription_options.file_standard,
+        chunk_size=inscription_options.chunk_size,
+        network=inscription_options.network,
+        quote_only=True,
+    )
+    response = _inscribe_with_inscriber(
+        input_payload, client_config, quote_options, existing_client
+    )
+    result = response.result
+    if not isinstance(result, dict):
+        raise ParseError("failed to parse inscriber quote response", ErrorContext())
+    return InscriberQuoteResult.model_validate(result)
