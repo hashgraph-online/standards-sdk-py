@@ -70,8 +70,7 @@ def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[st
 def main() -> None:
     uaids = _parse_list_env("REGISTRY_BROKER_ROUTE_PROBE_UAIDS", DEFAULT_TARGET_UAIDS)
     message = (
-        os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip()
-        or DEFAULT_MESSAGE
+        os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip() or DEFAULT_MESSAGE
     )
     api_keys = _parse_optional_api_keys()
 

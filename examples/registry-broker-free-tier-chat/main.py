@@ -96,9 +96,7 @@ def _session_id_from_response(response: object) -> str:
 
 def _run_chat_attempts(api_key: str, attempts: int) -> None:
     account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
-    target_uaid = os.getenv(
-        "REGISTRY_BROKER_CHAT_TARGET_UAID", DEFAULT_CHAT_TARGET_UAID
-    ).strip()
+    target_uaid = os.getenv("REGISTRY_BROKER_CHAT_TARGET_UAID", DEFAULT_CHAT_TARGET_UAID).strip()
     seed_count = os.getenv("REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT")
 
     print(f"\nTesting free-tier chat flow attempts={attempts}")
@@ -120,13 +118,9 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
                         used = seeded.get("used")
                         remaining = seeded.get("remaining")
                         limit = seeded.get("limit")
-                        print(
-                            f"usage-seeded used={used} remaining={remaining} limit={limit}"
-                        )
+                        print(f"usage-seeded used={used} remaining={remaining} limit={limit}")
                 except ValueError:
-                    print(
-                        "usage-seeded skipped invalid REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT"
-                    )
+                    print("usage-seeded skipped invalid REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT")
 
         session = client.create_session(
             {
