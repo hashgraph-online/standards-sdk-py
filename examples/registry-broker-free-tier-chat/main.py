@@ -9,17 +9,17 @@ from __future__ import annotations
 import os
 from urllib.parse import quote
 
-from examples.registry_broker_demo_utils import (
-    format_api_error,
-    parse_non_negative_int,
-    parse_positive_int,
-)
 from standards_sdk_py import (
     ApiError,
     RegistryBrokerAuthConfig,
     RegistryBrokerClient,
     SdkConfig,
     SdkNetworkConfig,
+)
+from standards_sdk_py.registry_broker.demo_utils import (
+    format_api_error,
+    parse_non_negative_int,
+    parse_positive_int,
 )
 from standards_sdk_py.registry_broker.models import CreateSessionResponse, SendMessageResponse
 from standards_sdk_py.shared.types import JsonObject, JsonValue
