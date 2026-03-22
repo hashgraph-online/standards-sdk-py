@@ -17,23 +17,82 @@ concurrency:
 jobs:
   tag-release:
     name: Create Release Tag
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release): bump version to ') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Resolve package version
+      - name: Bump package patch version
         id: version
         run: |
-          version="$(python3 - <<'PY'
+          python3 - <<'PY'
+          import re
           import tomllib
           from pathlib import Path
 
+          pyproject_path = Path("pyproject.toml")
+          pyproject_text = pyproject_path.read_text(encoding="utf-8")
+          pyproject = tomllib.loads(pyproject_text)
+          old_version = pyproject["project"]["version"]
+
+          match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", old_version)
+          if not match:
+              raise SystemExit(f"Version must be strict semver (x.y.z), got: {old_version}")
+
+          major, minor, patch = (int(group) for group in match.groups())
+          new_version = f"{major}.{minor}.{patch + 1}"
+          pyproject_text = pyproject_text.replace(
+              f'version = "{old_version}"',
+              f'version = "{new_version}"',
+              1,
+          )
+          pyproject_path.write_text(pyproject_text, encoding="utf-8")
+
+          uv_lock_path = Path("uv.lock")
+          uv_lock_text = uv_lock_path.read_text(encoding="utf-8")
+          uv_lock_text = re.sub(
+              rf'(\nversion = "){re.escape(old_version)}(")',
+              rf'\g<1>{new_version}\2',
+              uv_lock_text,
+              count=1,
+          )
+          uv_lock_text = re.sub(
+              rf'(\nname = "standards-sdk-py"\nversion = "){re.escape(old_version)}(")',
+              rf'\g<1>{new_version}\2',
+              uv_lock_text,
+              count=1,
+          )
+          uv_lock_path.write_text(uv_lock_text, encoding="utf-8")
+
+          meta_path = Path("conda-recipe/meta.yaml")
+          meta_text = meta_path.read_text(encoding="utf-8")
+          meta_text = re.sub(
+              r'(\{\% set version = environ.get\("PKG_VERSION"\) or ")([^"]+)("\s*\%\})',
+              rf'\g<1>{new_version}\3',
+              meta_text,
+              count=1,
+          )
+          meta_path.write_text(meta_text, encoding="utf-8")
+
+          print(new_version)
+          PY
+
+          version="$(python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
           pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
           print(pyproject["project"]["version"])
           PY
           )"
           tag="standards-sdk-py-v${version}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml uv.lock conda-recipe/meta.yaml
+          git commit -m "chore(release): bump version to ${version} [skip ci]"
+          git push origin HEAD:${GITHUB_REF_NAME}
+
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
       - name: Create and push release tag when missing
@@ -48,8 +107,6 @@ jobs:
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "${TAG}" -m "Release ${TAG}"
           git push origin "${TAG}"
           echo "Created release tag ${TAG}"
