@@ -42,6 +42,12 @@ set +a
 python examples/hcs10-build-message/main.py
 ```
 
+For Registry Broker free-tier demos:
+
+- `REGISTRY_BROKER_FREE_TIER_API_KEYS` for `registry-broker-free-tier-registration`
+- `REGISTRY_BROKER_FREE_TIER_CHAT_API_KEYS` for `registry-broker-free-tier-chat`
+- `REGISTRY_BROKER_DEMO_ENDPOINT` for `registry-broker-free-tier-registration` (must be a reachable agent endpoint)
+
 ## Hedera Credentials
 
 Examples that construct HCS clients from operator credentials read these env vars:

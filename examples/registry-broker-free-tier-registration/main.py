@@ -22,7 +22,6 @@ from standards_sdk_py import (
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_REGISTRY_NAMESPACE = "hashgraph-online"
 DEFAULT_COMMUNICATION_PROTOCOL = "a2a"
-DEFAULT_AGENT_ENDPOINT = "https://example.com/.well-known/agent.json"
 DEFAULT_ATTEMPTS_PER_KEY = 6
 
 
@@ -52,6 +51,11 @@ def _extract_api_keys() -> list[str]:
 
 
 def _build_registration_payload(attempt_index: int) -> dict[str, Any]:
+    endpoint = os.getenv("REGISTRY_BROKER_DEMO_ENDPOINT", "").strip()
+    if not endpoint:
+        raise RuntimeError(
+            "Set REGISTRY_BROKER_DEMO_ENDPOINT to a reachable A2A/ERC-8004 endpoint before running this demo."
+        )
     suffix = uuid.uuid4().hex[:10]
     return {
         "profile": {
@@ -67,7 +71,7 @@ def _build_registration_payload(attempt_index: int) -> dict[str, Any]:
         },
         "registry": DEFAULT_REGISTRY_NAMESPACE,
         "communicationProtocol": DEFAULT_COMMUNICATION_PROTOCOL,
-        "endpoint": os.getenv("REGISTRY_BROKER_DEMO_ENDPOINT", DEFAULT_AGENT_ENDPOINT),
+        "endpoint": endpoint,
         "additionalRegistries": [],
     }
 
@@ -82,8 +86,8 @@ def _create_client(api_key: str) -> RegistryBrokerClient:
     return RegistryBrokerClient(config=config)
 
 
-def _register_with_key(api_key: str, attempts: int) -> None:
-    print(f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts}")
+def _register_with_key(api_key: str, attempts: int, key_index: int) -> None:
+    print(f"\nTesting API key #{key_index + 1} attempts={attempts}")
     client = _create_client(api_key)
     try:
         for attempt_index in range(attempts):
@@ -110,6 +114,18 @@ def _register_with_key(api_key: str, attempts: int) -> None:
             if isinstance(result, dict):
                 status = result.get("status", "created")
                 uaid = result.get("uaid")
+                attempt_id = result.get("attemptId")
+                if status in {"pending", "partial"} and isinstance(attempt_id, str) and attempt_id.strip():
+                    final = client.wait_for_registration_completion(
+                        attempt_id.strip(),
+                        timeout_seconds=5 * 60,
+                        interval_seconds=2,
+                    )
+                    print(
+                        f"attempt={attempt_index + 1} register status={status} "
+                        f"attemptId={attempt_id} finalStatus={final.status} finalUaid={final.uaid}"
+                    )
+                    continue
                 print(f"attempt={attempt_index + 1} register status={status} uaid={uaid}")
             else:
                 print(f"attempt={attempt_index + 1} register response={result}")
@@ -123,8 +139,8 @@ def main() -> None:
         DEFAULT_ATTEMPTS_PER_KEY,
     )
     api_keys = _extract_api_keys()
-    for key in api_keys:
-        _register_with_key(key, attempts)
+    for key_index, key in enumerate(api_keys):
+        _register_with_key(key, attempts, key_index)
 
 
 if __name__ == "__main__":

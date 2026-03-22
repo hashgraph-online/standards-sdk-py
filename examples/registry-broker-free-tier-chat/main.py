@@ -11,6 +11,7 @@ from typing import Any
 from urllib.parse import quote
 
 from standards_sdk_py import (
+    ApiError,
     RegistryBrokerAuthConfig,
     RegistryBrokerClient,
     SdkConfig,
@@ -34,6 +35,21 @@ def _parse_positive_int(value: str | None, fallback: int) -> int:
     parsed = int(trimmed)
     if parsed <= 0:
         raise ValueError("Expected a positive integer")
+    return parsed
+
+
+def _parse_non_negative_int(value: str | None) -> int | None:
+    if value is None:
+        return None
+    trimmed = value.strip()
+    if not trimmed:
+        return None
+    try:
+        parsed = int(trimmed)
+    except ValueError:
+        return None
+    if parsed < 0:
+        return None
     return parsed
 
 
@@ -90,14 +106,14 @@ def _session_id_from_response(response: Any) -> str:
     raise RuntimeError("Chat session response did not include session_id")
 
 
-def _run_chat_attempts(api_key: str, attempts: int) -> None:
+def _run_chat_attempts(api_key: str, attempts: int, key_index: int) -> None:
     account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
     target_uaid = os.getenv(
         "REGISTRY_BROKER_CHAT_TARGET_UAID", DEFAULT_CHAT_TARGET_UAID
     ).strip()
-    seed_count = os.getenv("REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT")
+    seed_count = _parse_non_negative_int(os.getenv("REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT"))
 
-    print(f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts}")
+    print(f"\nTesting API key #{key_index + 1} attempts={attempts}")
     client = _create_client(api_key, account_id)
     try:
         if account_id:
@@ -107,8 +123,8 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
                     f"usage-before used={before.get('used')} remaining={before.get('remaining')} "
                     f"limit={before.get('limit')}"
                 )
-            if seed_count and seed_count.strip():
-                _set_chat_free_usage_seed(client, account_id, int(seed_count))
+            if seed_count is not None:
+                _set_chat_free_usage_seed(client, account_id, seed_count)
                 seeded = _read_chat_free_usage(client, account_id)
                 if seeded:
                     print(
@@ -126,14 +142,22 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
         print(f"session created sessionId={session_id}")
 
         for attempt_index in range(attempts):
-            response = client.send_message(
-                {
-                    "sessionId": session_id,
-                    "uaid": target_uaid,
-                    "streaming": False,
-                    "message": f"free-tier chat demo attempt {attempt_index + 1}",
-                }
-            )
+            try:
+                response = client.send_message(
+                    {
+                        "sessionId": session_id,
+                        "uaid": target_uaid,
+                        "streaming": False,
+                        "message": f"free-tier chat demo attempt {attempt_index + 1}",
+                    }
+                )
+            except ApiError as error:
+                if error.context.status_code == 402:
+                    print(
+                        f"attempt={attempt_index + 1} send status=402 body={error.context.body}"
+                    )
+                    continue
+                raise
             response_session = getattr(response, "session_id", None)
             response_message = getattr(response, "message_id", None)
             print(
@@ -158,8 +182,8 @@ def main() -> None:
         DEFAULT_ATTEMPTS_PER_KEY,
     )
     api_keys = _extract_api_keys()
-    for key in api_keys:
-        _run_chat_attempts(key, attempts)
+    for key_index, key in enumerate(api_keys):
+        _run_chat_attempts(key, attempts, key_index)
 
 
 if __name__ == "__main__":
