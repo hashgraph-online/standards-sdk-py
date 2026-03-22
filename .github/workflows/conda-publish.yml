@@ -1,11 +1,6 @@
 name: standards-sdk-py-conda-publish
 
 on:
-  pull_request:
-    paths:
-      - "pyproject.toml"
-      - "conda-recipe/**"
-      - ".github/workflows/conda-publish.yml"
   push:
     tags:
       - "standards-sdk-py-v*"
