@@ -40,6 +40,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "brotli>=1.1.0,<2.0.0",
   "httpx>=0.27.2,<1.0.0",
   "hedera-sdk-py>=2.50.0,<3.0.0",
   "pydantic>=2.10.0,<3.0.0",
