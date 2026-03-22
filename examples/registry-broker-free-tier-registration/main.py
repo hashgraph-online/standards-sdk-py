@@ -83,7 +83,7 @@ def _create_client(api_key: str) -> RegistryBrokerClient:
 
 
 def _register_with_key(api_key: str, attempts: int) -> None:
-    print(f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts}")
+    print(f"\nTesting free-tier registration flow attempts={attempts}")
     client = _create_client(api_key)
     try:
         for attempt_index in range(attempts):

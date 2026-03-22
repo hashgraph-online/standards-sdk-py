@@ -97,7 +97,7 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
     ).strip()
     seed_count = os.getenv("REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT")
 
-    print(f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts}")
+    print(f"\nTesting free-tier chat flow attempts={attempts}")
     client = _create_client(api_key, account_id)
     try:
         if account_id:
@@ -108,12 +108,18 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
                     f"limit={before.get('limit')}"
                 )
             if seed_count and seed_count.strip():
-                _set_chat_free_usage_seed(client, account_id, int(seed_count))
-                seeded = _read_chat_free_usage(client, account_id)
-                if seeded:
+                try:
+                    parsed_seed_count = _parse_positive_int(seed_count, 0)
+                    _set_chat_free_usage_seed(client, account_id, parsed_seed_count)
+                    seeded = _read_chat_free_usage(client, account_id)
+                    if seeded:
+                        print(
+                            f"usage-seeded used={seeded.get('used')} remaining={seeded.get('remaining')} "
+                            f"limit={seeded.get('limit')}"
+                        )
+                except ValueError:
                     print(
-                        f"usage-seeded used={seeded.get('used')} remaining={seeded.get('remaining')} "
-                        f"limit={seeded.get('limit')}"
+                        "usage-seeded skipped invalid REGISTRY_BROKER_CHAT_FREE_TIER_SEED_COUNT"
                     )
 
         session = client.create_session(
@@ -126,12 +132,14 @@ def _run_chat_attempts(api_key: str, attempts: int) -> None:
         print(f"session created sessionId={session_id}")
 
         for attempt_index in range(attempts):
+            content = f"free-tier chat demo attempt {attempt_index + 1}"
             response = client.send_message(
                 {
                     "sessionId": session_id,
                     "uaid": target_uaid,
                     "streaming": False,
-                    "message": f"free-tier chat demo attempt {attempt_index + 1}",
+                    "content": content,
+                    "message": content,
                 }
             )
             response_session = getattr(response, "session_id", None)

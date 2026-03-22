@@ -44,9 +44,11 @@ def _parse_optional_api_keys() -> list[str]:
     return parsed or [""]
 
 
-def _create_client(api_key: str | None) -> RegistryBrokerClient:
+def _create_client(api_key: str | None, include_account_context: bool) -> RegistryBrokerClient:
     base_url = os.getenv("REGISTRY_BROKER_BASE_URL", DEFAULT_REGISTRY_BASE_URL).strip()
-    account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
+    account_id = None
+    if include_account_context:
+        account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
     auth = RegistryBrokerAuthConfig(api_key=api_key, account_id=account_id)
     config = SdkConfig(
         network=SdkNetworkConfig(registry_broker_base_url=base_url),
@@ -71,10 +73,11 @@ def main() -> None:
     message = os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip() or DEFAULT_MESSAGE
     api_keys = _parse_optional_api_keys()
 
-    for api_key in api_keys:
-        label = f"{api_key[:6]}..." if api_key else "anonymous"
+    for index, api_key in enumerate(api_keys, start=1):
+        is_anonymous = not api_key
+        label = "anonymous" if is_anonymous else f"api-key-{index}"
         print(f"\nRoute probe mode={label}")
-        client = _create_client(api_key or None)
+        client = _create_client(api_key or None, include_account_context=not is_anonymous)
         try:
             for uaid in uaids:
                 try:
