@@ -40,9 +40,7 @@ def _extract_api_keys() -> list[str]:
     return api_keys
 
 
-def _build_registration_payload(
-    attempt_index: int, endpoint: str, communication_protocol: str
-) -> JsonObject:
+def _build_registration_payload(attempt_index: int, endpoint: str, protocol: str) -> JsonObject:
     suffix = uuid.uuid4().hex[:10]
     return {
         "profile": {
@@ -57,7 +55,7 @@ def _build_registration_payload(
             },
         },
         "registry": DEFAULT_REGISTRY_NAMESPACE,
-        "communicationProtocol": communication_protocol,
+        "communicationProtocol": protocol,
         "endpoint": endpoint,
         "additionalRegistries": [],
     }
@@ -90,7 +88,7 @@ def _register_with_key(api_key: str, attempts: int, key_index: int) -> None:
             payload = _build_registration_payload(
                 attempt_index,
                 endpoint=endpoint,
-                communication_protocol=communication_protocol,
+                protocol=communication_protocol,
             )
             quote = client.call_operation("get_registration_quote", body=payload)
             if not isinstance(quote, dict):
@@ -137,7 +135,8 @@ def _register_with_key(api_key: str, attempts: int, key_index: int) -> None:
                         continue
                     print(
                         f"attempt={attempt_index + 1} register status={status} "
-                        f"attemptId={attempt_id} finalStatus={final.status} finalUaid={final.uaid}"
+                        f"attemptId={attempt_id} finalStatus={final.status} "
+                        f"finalUaid={final.uaid}"
                     )
                     continue
                 print(f"attempt={attempt_index + 1} register status={status} uaid={uaid}")

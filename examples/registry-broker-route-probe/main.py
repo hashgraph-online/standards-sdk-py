@@ -7,7 +7,6 @@ any broker base URL via environment variables.
 from __future__ import annotations
 
 import os
-from typing import Any
 from urllib.parse import quote
 
 from standards_sdk_py import (
@@ -17,6 +16,11 @@ from standards_sdk_py import (
     SdkConfig,
     SdkNetworkConfig,
 )
+from standards_sdk_py.registry_broker.demo_utils import (
+    format_api_error,
+    format_json_preview,
+)
+from standards_sdk_py.shared.types import JsonValue
 
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_MESSAGE = "Route probe from standards-sdk-py"
@@ -56,15 +60,18 @@ def _create_client(api_key: str | None, include_account_context: bool) -> Regist
     return RegistryBrokerClient(config=config)
 
 
-def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[str, Any]:
+def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[str, JsonValue]:
     path = f"/route/{quote(uaid, safe='')}"
-    return client.request_json(
+    payload = client.request_json(
         path,
         {
             "method": "POST",
             "body": {"message": message},
         },
     )
+    if not isinstance(payload, dict):
+        raise RuntimeError("Route probe response was not a JSON object")
+    return payload
 
 
 def main() -> None:
@@ -83,13 +90,9 @@ def main() -> None:
             for uaid in uaids:
                 try:
                     payload = _probe_one(client, uaid, message)
-                    payload_keys: list[str] = []
-                    if isinstance(payload, dict):
-                        payload_keys = [str(key) for key in payload.keys()]
-                    print(f"uaid={uaid} status=ok payloadKeys={sorted(payload_keys)}")
+                    print(f"uaid={uaid} status=ok " f"payload={format_json_preview(payload)}")
                 except ApiError as error:
-                    status_code = error.context.status_code
-                    print(f"uaid={uaid} status=error code={status_code}")
+                    print(f"uaid={uaid} status=error {format_api_error(error)}")
         finally:
             client.close()
 

@@ -21,6 +21,19 @@ def parse_positive_int(value: str | None, fallback: int) -> int:
     return parsed
 
 
+def parse_positive_float(value: str | None, fallback: float) -> float:
+    """Parse a positive float with fallback semantics."""
+    if value is None:
+        return fallback
+    trimmed = value.strip()
+    if not trimmed:
+        return fallback
+    parsed = float(trimmed)
+    if parsed <= 0:
+        raise ValueError("Expected a positive float")
+    return parsed
+
+
 def parse_non_negative_int(value: str | None) -> int | None:
     """Parse a non-negative integer or return None for empty/invalid values."""
     if value is None:
