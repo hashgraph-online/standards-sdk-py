@@ -16,7 +16,10 @@ from standards_sdk_py import (
     SdkConfig,
     SdkNetworkConfig,
 )
-from standards_sdk_py.registry_broker.demo_utils import format_api_error, summarize_mapping_keys
+from standards_sdk_py.registry_broker.demo_utils import (
+    format_api_error,
+    format_json_preview,
+)
 from standards_sdk_py.shared.types import JsonValue
 
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
@@ -86,8 +89,7 @@ def main() -> None:
             for uaid in uaids:
                 try:
                     payload = _probe_one(client, uaid, message)
-                    payload_summary = summarize_mapping_keys(payload)
-                    print(f"uaid={uaid} status=ok " f"payloadKeys={payload_summary}")
+                    print(f"uaid={uaid} status=ok " f"payload={format_json_preview(payload)}")
                 except ApiError as error:
                     print(f"uaid={uaid} status=error {format_api_error(error)}")
         finally:
