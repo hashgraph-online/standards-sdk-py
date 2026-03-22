@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import Any
 
+from examples.registry_broker_demo_utils import format_api_error, parse_positive_int
 from standards_sdk_py import (
     ApiError,
     RegistryBrokerAuthConfig,
@@ -17,25 +17,13 @@ from standards_sdk_py import (
     SdkConfig,
     SdkNetworkConfig,
 )
-
+from standards_sdk_py.registry_broker.models import RegistrationProgressResponse
+from standards_sdk_py.shared.types import JsonObject
 
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_REGISTRY_NAMESPACE = "hashgraph-online"
 DEFAULT_COMMUNICATION_PROTOCOL = "a2a"
-DEFAULT_AGENT_ENDPOINT = "https://example.com/.well-known/agent.json"
 DEFAULT_ATTEMPTS_PER_KEY = 6
-
-
-def _parse_positive_int(value: str | None, fallback: int) -> int:
-    if value is None:
-        return fallback
-    trimmed = value.strip()
-    if not trimmed:
-        return fallback
-    parsed = int(trimmed)
-    if parsed <= 0:
-        raise ValueError("Expected a positive integer")
-    return parsed
 
 
 def _extract_api_keys() -> list[str]:
@@ -51,7 +39,7 @@ def _extract_api_keys() -> list[str]:
     return api_keys
 
 
-def _build_registration_payload(attempt_index: int) -> dict[str, Any]:
+def _build_registration_payload(attempt_index: int, endpoint: str, protocol: str) -> JsonObject:
     suffix = uuid.uuid4().hex[:10]
     return {
         "profile": {
@@ -66,8 +54,8 @@ def _build_registration_payload(attempt_index: int) -> dict[str, Any]:
             },
         },
         "registry": DEFAULT_REGISTRY_NAMESPACE,
-        "communicationProtocol": DEFAULT_COMMUNICATION_PROTOCOL,
-        "endpoint": os.getenv("REGISTRY_BROKER_DEMO_ENDPOINT", DEFAULT_AGENT_ENDPOINT),
+        "communicationProtocol": protocol,
+        "endpoint": endpoint,
         "additionalRegistries": [],
     }
 
@@ -84,10 +72,23 @@ def _create_client(api_key: str) -> RegistryBrokerClient:
 
 def _register_with_key(api_key: str, attempts: int) -> None:
     print(f"\nTesting API key prefix: {api_key[:6]}... attempts={attempts}")
+    endpoint = os.getenv("REGISTRY_BROKER_DEMO_ENDPOINT", "").strip()
+    if not endpoint:
+        raise RuntimeError(
+            "Set REGISTRY_BROKER_DEMO_ENDPOINT to a reachable A2A/ERC-8004 endpoint."
+        )
+    communication_protocol = (
+        os.getenv("REGISTRY_BROKER_DEMO_PROTOCOL", DEFAULT_COMMUNICATION_PROTOCOL).strip()
+        or DEFAULT_COMMUNICATION_PROTOCOL
+    )
     client = _create_client(api_key)
     try:
         for attempt_index in range(attempts):
-            payload = _build_registration_payload(attempt_index)
+            payload = _build_registration_payload(
+                attempt_index,
+                endpoint=endpoint,
+                protocol=communication_protocol,
+            )
             quote = client.call_operation("get_registration_quote", body=payload)
             if not isinstance(quote, dict):
                 raise RuntimeError("Quote response was not a JSON object")
@@ -103,13 +104,30 @@ def _register_with_key(api_key: str, attempts: int) -> None:
                 result = client.register_agent(payload)
             except ApiError as error:
                 if error.context.status_code == 402:
-                    print(f"attempt={attempt_index + 1} register status=402 body={error.context.body}")
+                    print(f"attempt={attempt_index + 1} register " f"{format_api_error(error)}")
                     continue
                 raise
 
             if isinstance(result, dict):
                 status = result.get("status", "created")
                 uaid = result.get("uaid")
+                attempt_id = result.get("attemptId")
+                if (
+                    status in {"pending", "partial"}
+                    and isinstance(attempt_id, str)
+                    and attempt_id.strip()
+                ):
+                    final: RegistrationProgressResponse = client.wait_for_registration_completion(
+                        attempt_id.strip(),
+                        timeout_seconds=5 * 60,
+                        interval_seconds=2,
+                    )
+                    print(
+                        f"attempt={attempt_index + 1} register status={status} "
+                        f"attemptId={attempt_id} finalStatus={final.status} "
+                        f"finalUaid={final.uaid}"
+                    )
+                    continue
                 print(f"attempt={attempt_index + 1} register status={status} uaid={uaid}")
             else:
                 print(f"attempt={attempt_index + 1} register response={result}")
@@ -118,7 +136,7 @@ def _register_with_key(api_key: str, attempts: int) -> None:
 
 
 def main() -> None:
-    attempts = _parse_positive_int(
+    attempts = parse_positive_int(
         os.getenv("REGISTRY_BROKER_FREE_TIER_ATTEMPTS"),
         DEFAULT_ATTEMPTS_PER_KEY,
     )

@@ -7,9 +7,9 @@ any broker base URL via environment variables.
 from __future__ import annotations
 
 import os
-from typing import Any
 from urllib.parse import quote
 
+from examples.registry_broker_demo_utils import format_api_error, summarize_mapping_keys
 from standards_sdk_py import (
     ApiError,
     RegistryBrokerAuthConfig,
@@ -17,7 +17,7 @@ from standards_sdk_py import (
     SdkConfig,
     SdkNetworkConfig,
 )
-
+from standards_sdk_py.shared.types import JsonValue
 
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"
 DEFAULT_MESSAGE = "Route probe from standards-sdk-py"
@@ -46,7 +46,9 @@ def _parse_optional_api_keys() -> list[str]:
 
 def _create_client(api_key: str | None) -> RegistryBrokerClient:
     base_url = os.getenv("REGISTRY_BROKER_BASE_URL", DEFAULT_REGISTRY_BASE_URL).strip()
-    account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
+    account_id = None
+    if api_key:
+        account_id = os.getenv("REGISTRY_BROKER_ACCOUNT_ID", "").strip() or None
     auth = RegistryBrokerAuthConfig(api_key=api_key, account_id=account_id)
     config = SdkConfig(
         network=SdkNetworkConfig(registry_broker_base_url=base_url),
@@ -55,20 +57,25 @@ def _create_client(api_key: str | None) -> RegistryBrokerClient:
     return RegistryBrokerClient(config=config)
 
 
-def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[str, Any]:
+def _probe_one(client: RegistryBrokerClient, uaid: str, message: str) -> dict[str, JsonValue]:
     path = f"/route/{quote(uaid, safe='')}"
-    return client.request_json(
+    payload = client.request_json(
         path,
         {
             "method": "POST",
             "body": {"message": message},
         },
     )
+    if not isinstance(payload, dict):
+        raise RuntimeError("Route probe response was not a JSON object")
+    return payload
 
 
 def main() -> None:
     uaids = _parse_list_env("REGISTRY_BROKER_ROUTE_PROBE_UAIDS", DEFAULT_TARGET_UAIDS)
-    message = os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip() or DEFAULT_MESSAGE
+    message = (
+        os.getenv("REGISTRY_BROKER_ROUTE_PROBE_MESSAGE", DEFAULT_MESSAGE).strip() or DEFAULT_MESSAGE
+    )
     api_keys = _parse_optional_api_keys()
 
     for api_key in api_keys:
@@ -79,11 +86,10 @@ def main() -> None:
             for uaid in uaids:
                 try:
                     payload = _probe_one(client, uaid, message)
-                    print(f"uaid={uaid} status=ok payload={payload}")
+                    payload_summary = summarize_mapping_keys(payload)
+                    print(f"uaid={uaid} status=ok " f"payloadKeys={payload_summary}")
                 except ApiError as error:
-                    status_code = error.context.status_code
-                    body = error.context.body
-                    print(f"uaid={uaid} status=error code={status_code} body={body}")
+                    print(f"uaid={uaid} status=error {format_api_error(error)}")
         finally:
             client.close()
 
