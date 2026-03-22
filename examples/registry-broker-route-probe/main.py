@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 from urllib.parse import quote
 
-from examples.registry_broker_demo_utils import format_api_error, summarize_mapping_keys
 from standards_sdk_py import (
     ApiError,
     RegistryBrokerAuthConfig,
@@ -17,6 +16,7 @@ from standards_sdk_py import (
     SdkConfig,
     SdkNetworkConfig,
 )
+from standards_sdk_py.registry_broker.demo_utils import format_api_error, summarize_mapping_keys
 from standards_sdk_py.shared.types import JsonValue
 
 DEFAULT_REGISTRY_BASE_URL = "https://hol.org/registry/api/v1"

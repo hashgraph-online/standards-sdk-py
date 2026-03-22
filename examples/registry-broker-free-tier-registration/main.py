@@ -9,14 +9,15 @@ from __future__ import annotations
 import os
 import uuid
 
-from examples.registry_broker_demo_utils import format_api_error, parse_positive_int
 from standards_sdk_py import (
     ApiError,
     RegistryBrokerAuthConfig,
     RegistryBrokerClient,
     SdkConfig,
+    SdkError,
     SdkNetworkConfig,
 )
+from standards_sdk_py.registry_broker.demo_utils import format_api_error, parse_positive_int
 from standards_sdk_py.registry_broker.models import RegistrationProgressResponse
 from standards_sdk_py.shared.types import JsonObject
 
@@ -117,11 +118,21 @@ def _register_with_key(api_key: str, attempts: int, key_index: int) -> None:
                     and isinstance(attempt_id, str)
                     and attempt_id.strip()
                 ):
-                    final: RegistrationProgressResponse = client.wait_for_registration_completion(
-                        attempt_id.strip(),
-                        timeout_seconds=5 * 60,
-                        interval_seconds=2,
-                    )
+                    try:
+                        final: RegistrationProgressResponse = (
+                            client.wait_for_registration_completion(
+                                attempt_id.strip(),
+                                timeout_seconds=5 * 60,
+                                interval_seconds=2,
+                            )
+                        )
+                    except SdkError as error:
+                        print(
+                            f"attempt={attempt_index + 1} register "
+                            f"pending wait failed error={type(error).__name__} "
+                            f"details={error}"
+                        )
+                        continue
                     print(
                         f"attempt={attempt_index + 1} register status={status} "
                         f"attemptId={attempt_id} finalStatus={final.status} "
