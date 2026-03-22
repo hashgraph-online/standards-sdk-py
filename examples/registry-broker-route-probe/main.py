@@ -83,7 +83,10 @@ def main() -> None:
             for uaid in uaids:
                 try:
                     payload = _probe_one(client, uaid, message)
-                    print(f"uaid={uaid} status=ok payload={payload}")
+                    payload_keys: list[str] = []
+                    if isinstance(payload, dict):
+                        payload_keys = [str(key) for key in payload.keys()]
+                    print(f"uaid={uaid} status=ok payloadKeys={sorted(payload_keys)}")
                 except ApiError as error:
                     status_code = error.context.status_code
                     print(f"uaid={uaid} status=error code={status_code}")
