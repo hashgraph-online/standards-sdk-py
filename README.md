@@ -224,7 +224,7 @@ For disclosure and response policy, see [SECURITY.md](./SECURITY.md).
 
 ## Maintainers
 
-Maintained by Hashgraph Online.
+Maintained by HOL.
 
 ## Resources
 
