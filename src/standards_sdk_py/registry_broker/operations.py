@@ -24,6 +24,7 @@ REGISTRY_BROKER_OPERATIONS: dict[str, OperationSpec] = {
     ),
     "submit_agent_feedback": OperationSpec("POST", "/agents/{uaid}/feedback"),
     "search": OperationSpec("GET", "/search"),
+    "delegate": OperationSpec("POST", "/delegate"),
     "stats": OperationSpec("GET", "/stats"),
     "registries": OperationSpec("GET", "/registries"),
     "get_additional_registries": OperationSpec("GET", "/register/additional-registries"),

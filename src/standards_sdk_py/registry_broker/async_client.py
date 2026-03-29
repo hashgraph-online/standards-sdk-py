@@ -18,6 +18,7 @@ from pydantic import ValidationError as PydanticValidationError
 from standards_sdk_py.exceptions import ErrorContext, ParseError, ValidationError
 from standards_sdk_py.registry_broker.models import (
     CreateSessionResponse,
+    DelegationPlanResponse,
     ProtocolsResponse,
     RegistrationProgressResponse,
     RegistriesResponse,
@@ -385,6 +386,27 @@ class AsyncRegistryBrokerClient:
             payload["q"] = query
         raw = await self.call_operation("search", query=payload if payload else None)
         return self._parse_model(raw, SearchResponse)
+
+    async def delegate(
+        self,
+        *,
+        task: str,
+        context: str | None = None,
+        limit: int | None = None,
+        filter: JsonObject | None = None,
+        workspace: JsonObject | None = None,
+    ) -> DelegationPlanResponse:
+        payload: JsonObject = {"task": task}
+        if context is not None:
+            payload["context"] = context
+        if limit is not None:
+            payload["limit"] = limit
+        if filter is not None:
+            payload["filter"] = filter
+        if workspace is not None:
+            payload["workspace"] = workspace
+        raw = await self.call_operation("delegate", body=payload)
+        return self._parse_model(raw, DelegationPlanResponse)
 
     async def search_erc8004_by_agent_id(
         self,

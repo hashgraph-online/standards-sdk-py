@@ -30,6 +30,7 @@
     "decryptHistoryEntryFromContext",
     "delay",
     "deriveSharedSecret",
+    "delegate",
     "detectProtocol",
     "encryption",
     "encryptionReady",
