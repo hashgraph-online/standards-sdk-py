@@ -21,24 +21,27 @@ class SearchHit(BaseModel):
     score: float | None = None
     metadata: SearchHitMetadata | None = None
 
+    def _mapping_payload(self) -> dict[str, object]:
+        return self.model_dump(by_alias=True, exclude_none=True, exclude_unset=True)
+
     def __getitem__(self, key: str) -> object:
-        payload = self.model_dump(by_alias=True)
+        payload = self._mapping_payload()
         return payload[key]
 
     def get(self, key: str, default: object | None = None) -> object | None:
-        payload = self.model_dump(by_alias=True)
+        payload = self._mapping_payload()
         return payload.get(key, default)
 
     def keys(self) -> list[str]:
-        payload = self.model_dump(by_alias=True)
+        payload = self._mapping_payload()
         return list(payload.keys())
 
     def items(self) -> list[tuple[str, object]]:
-        payload = self.model_dump(by_alias=True)
+        payload = self._mapping_payload()
         return list(payload.items())
 
     def values(self) -> list[object]:
-        payload = self.model_dump(by_alias=True)
+        payload = self._mapping_payload()
         return list(payload.values())
 
 

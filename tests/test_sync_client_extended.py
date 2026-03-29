@@ -21,6 +21,7 @@ from standards_sdk_py.registry_broker.models import (
     ProtocolsResponse,
     RegistrationProgressResponse,
     RegistriesResponse,
+    SearchHit,
     SearchResponse,
     SendMessageResponse,
     SkillPublishResponse,
@@ -341,6 +342,13 @@ def test_search_parses_typed_delegation_metadata() -> None:
     assert result.hits[0].metadata.delegation_signals["verified"] is True
     assert result.hits[0]["uaid"] == "uaid-1"
     assert result.hits[0].get("score") == 0.98
+
+
+def test_search_hit_mapping_preserves_missing_key_behavior() -> None:
+    hit = SearchHit(uaid="uaid-1")
+    with pytest.raises(KeyError):
+        _ = hit["metadata"]
+    assert hit.get("metadata") is None
 
 
 # ── call_operation ───────────────────────────────────────────────────
