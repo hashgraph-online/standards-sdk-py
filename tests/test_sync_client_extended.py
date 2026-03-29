@@ -17,9 +17,11 @@ from standards_sdk_py.exceptions import (
 )
 from standards_sdk_py.registry_broker.models import (
     CreateSessionResponse,
+    DelegationPlanResponse,
     ProtocolsResponse,
     RegistrationProgressResponse,
     RegistriesResponse,
+    SearchHit,
     SearchResponse,
     SendMessageResponse,
     SkillPublishResponse,
@@ -47,8 +49,61 @@ from standards_sdk_py.shared.http import SyncHttpTransport
 # ── Helper: create a client backed by a mock transport ────────────────
 
 _MOCK_SEARCH_RESPONSE = {
-    "results": [],
-    "total": 0,
+    "hits": [
+        {
+            "uaid": "uaid-1",
+            "label": "Docs Agent",
+            "score": 0.98,
+            "metadata": {
+                "delegationRoles": ["docs"],
+                "delegationTaskTags": ["documentation"],
+                "delegationProtocols": ["mcp"],
+                "delegationSummary": "Specialized in docs.",
+                "delegationSignals": {"verified": True},
+            },
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "limit": 20,
+}
+_MOCK_DELEGATION_RESPONSE = {
+    "task": "Review SDK PR feedback",
+    "summary": "Delegate documentation follow-up.",
+    "shouldDelegate": True,
+    "localFirstReason": "Main agent owns the implementation work.",
+    "recommendation": {"summary": "Delegate docs only", "mode": "parallel"},
+    "opportunities": [
+        {
+            "id": "docs",
+            "title": "Docs follow-up",
+            "reason": "Bounded copy update",
+            "role": "docs",
+            "type": "sidecar",
+            "suggestedMode": "parallel",
+            "searchQueries": ["docs markdown docusaurus"],
+            "candidates": [
+                {
+                    "uaid": "uaid-1",
+                    "label": "Docs Agent",
+                    "agent": {"name": "Docs Agent", "verified": True},
+                    "score": 0.98,
+                    "matchedQueries": ["docs markdown docusaurus"],
+                    "matchedRoles": ["docs"],
+                    "matchedProtocols": ["mcp"],
+                    "matchedSurfaces": ["docs"],
+                    "matchedLanguages": ["typescript"],
+                    "matchedArtifacts": ["markdown"],
+                    "matchedTaskTags": ["documentation"],
+                    "reasons": ["Strong docs match"],
+                    "suggestedMessage": "Update the docs tab set.",
+                    "extraCandidateField": "preserved",
+                }
+            ],
+            "extraOpportunityField": "preserved",
+        }
+    ],
+    "extraRootField": "preserved",
 }
 _MOCK_STATS_RESPONSE = {"totalAgents": 42, "totalSkills": 10}
 _MOCK_REGISTRIES_RESPONSE = {"registries": []}
@@ -236,6 +291,83 @@ def test_request_json_success() -> None:
     client = _make_client(transport)
     result = client.request_json("/path")
     assert result == {"ok": True}
+
+
+def test_delegate() -> None:
+    transport = MagicMock(spec=SyncHttpTransport)
+    transport.base_url = "https://example.test"
+    transport.headers = {}
+    transport.request_json.return_value = _MOCK_DELEGATION_RESPONSE
+    client = _make_client(transport)
+    result = client.delegate(
+        task="Review SDK PR feedback",
+        context="We need a docs-focused pass.",
+        limit=2,
+        filter={"protocols": ["mcp"]},
+        workspace={"repo": "hashgraph-online/standards-sdk"},
+    )
+    assert isinstance(result, DelegationPlanResponse)
+    assert result.should_delegate is True
+    assert result.opportunities[0].candidates[0].matched_roles == ["docs"]
+    assert result.extraRootField == "preserved"
+    assert result.opportunities[0].extraOpportunityField == "preserved"
+    assert result.opportunities[0].candidates[0].extraCandidateField == "preserved"
+    transport.request_json.assert_called_once()
+
+
+def test_delegate_accepts_query_filter_alias() -> None:
+    transport = MagicMock(spec=SyncHttpTransport)
+    transport.base_url = "https://example.test"
+    transport.headers = {}
+    transport.request_json.return_value = _MOCK_DELEGATION_RESPONSE
+    client = _make_client(transport)
+    result = client.delegate(
+        task="Review SDK PR feedback",
+        query_filter={"protocols": ["mcp"]},
+    )
+    assert result.should_delegate is True
+    transport.request_json.assert_called_once()
+
+
+def test_search_parses_typed_delegation_metadata() -> None:
+    transport = MagicMock(spec=SyncHttpTransport)
+    transport.base_url = "https://example.test"
+    transport.headers = {}
+    transport.request_json.return_value = _MOCK_SEARCH_RESPONSE
+    client = _make_client(transport)
+    result = client.search(query="docs")
+    assert isinstance(result, SearchResponse)
+    assert result.hits[0].metadata is not None
+    assert result.hits[0].metadata.delegation_roles == ["docs"]
+    assert result.hits[0].metadata.delegation_signals["verified"] is True
+    assert result.hits[0]["uaid"] == "uaid-1"
+    assert result.hits[0].get("score") == 0.98
+
+
+def test_search_hit_mapping_preserves_missing_key_behavior() -> None:
+    hit = SearchHit(uaid="uaid-1")
+    with pytest.raises(KeyError):
+        _ = hit["metadata"]
+    assert hit.get("metadata") is None
+
+
+def test_search_hit_mapping_preserves_explicit_nulls_and_extra_fields() -> None:
+    hit = SearchHit.model_validate(
+        {
+            "uaid": "uaid-1",
+            "metadata": None,
+            "verified": None,
+            "customScore": 7,
+        }
+    )
+    assert hit["metadata"] is None
+    assert hit["verified"] is None
+    assert hit.get("customScore") == 7
+    assert dict(hit.items())["customScore"] == 7
+    assert "metadata" in hit
+    assert "verified" in hit
+    assert "customScore" in hit
+    assert "missing" not in hit
 
 
 # ── call_operation ───────────────────────────────────────────────────

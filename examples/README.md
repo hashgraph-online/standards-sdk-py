@@ -6,6 +6,7 @@ flows. Each example maps to a supported HCS module or Registry Broker workflow.
 | Example | Specification | Description |
 | ------- | ------------- | ----------- |
 | `standards-sdk-discovery` | SDK Core | Registry Broker discovery (`search`, `stats`, `list_protocols`) |
+| `registry-broker-delegation` | Registry Broker | Delegation planner flow (`delegate`) with ranked opportunities and candidates |
 | `registry-broker-free-tier-registration` | Registry Broker | Live free-tier registration flow (`quote` + `register`) with API key auth |
 | `registry-broker-free-tier-chat` | Registry Broker | Live free-tier chat flow (`create_session` + `send_message`) with API key auth |
 | `registry-broker-route-probe` | Registry Broker | Live UAID route probe (`POST /route/:uaid`) for adapter/routing diagnostics |
@@ -63,6 +64,7 @@ Examples that construct HCS clients from operator credentials read these env var
 ## CodeSandbox
 
 - [`standards-sdk-discovery`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/standards-sdk-discovery)
+- [`registry-broker-delegation`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-delegation)
 - [`registry-broker-free-tier-registration`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-free-tier-registration)
 - [`registry-broker-free-tier-chat`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-free-tier-chat)
 - [`registry-broker-route-probe`](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-route-probe)

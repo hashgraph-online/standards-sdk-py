@@ -64,6 +64,7 @@ def test_operation_names_sorted() -> None:
     names = operation_names()
     assert names == sorted(names)
     assert len(names) == len(REGISTRY_BROKER_OPERATIONS)
+    assert "delegate" in names
     assert "search" in names
     assert "stats" in names
 
@@ -75,6 +76,39 @@ def _handler(request: httpx.Request) -> httpx.Response:
     path = request.url.path
     if path == "/search":
         return httpx.Response(200, json={"hits": [], "total": 0, "page": 1, "limit": 20})
+    if path == "/delegate":
+        return httpx.Response(
+            200,
+            json={
+                "task": "Review SDK PR feedback",
+                "summary": "Delegate documentation follow-up.",
+                "shouldDelegate": True,
+                "localFirstReason": "Main agent owns the implementation work.",
+                "recommendation": {"summary": "Delegate docs only", "mode": "parallel"},
+                "opportunities": [
+                    {
+                        "id": "docs",
+                        "title": "Docs follow-up",
+                        "reason": "Bounded copy update",
+                        "role": "docs",
+                        "type": "sidecar",
+                        "suggestedMode": "parallel",
+                        "searchQueries": ["docs markdown docusaurus"],
+                        "candidates": [
+                            {
+                                "uaid": "uaid-1",
+                                "label": "Docs Agent",
+                                "agent": {"name": "Docs Agent", "verified": True},
+                                "score": 0.98,
+                                "matchedRoles": ["docs"],
+                                "reasons": ["Strong docs match"],
+                                "suggestedMessage": "Update the docs tab set.",
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
     if path == "/stats":
         return httpx.Response(200, json={"total_agents": 100, "active_agents": 42})
     if path == "/registries":
@@ -117,6 +151,13 @@ def test_sync_search() -> None:
     result = client.search(query="test")
     assert result.total == 0
     assert result.hits == []
+
+
+def test_sync_delegate() -> None:
+    client = _make_sync_client()
+    result = client.delegate(task="Review SDK PR feedback")
+    assert result.should_delegate is True
+    assert result.opportunities[0].candidates[0].matched_roles == ["docs"]
 
 
 def test_sync_search_no_query() -> None:
@@ -283,6 +324,14 @@ async def test_async_search() -> None:
     client = _make_async_client()
     result = await client.search(query="test")
     assert result.total == 0
+
+
+@pytest.mark.asyncio
+async def test_async_delegate() -> None:
+    client = _make_async_client()
+    result = await client.delegate(task="Review SDK PR feedback")
+    assert result.should_delegate is True
+    assert result.opportunities[0].candidates[0].matched_roles == ["docs"]
 
 
 @pytest.mark.asyncio

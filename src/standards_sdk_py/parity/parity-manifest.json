@@ -2737,6 +2737,13 @@
       "status": "verified"
     },
     {
+      "id": "ts-registry-delegate",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.delegate",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.delegate",
+      "status": "verified"
+    },
+    {
       "id": "ts-registry-get-verification-status",
       "source_sdk": "ts",
       "source_symbol": "RegistryBrokerClient.getVerificationStatus",

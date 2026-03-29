@@ -17,6 +17,7 @@ from pydantic import ValidationError as PydanticValidationError
 from standards_sdk_py.exceptions import ErrorContext, ParseError, ValidationError
 from standards_sdk_py.registry_broker.models import (
     CreateSessionResponse,
+    DelegationPlanResponse,
     ProtocolsResponse,
     RegistrationProgressResponse,
     RegistriesResponse,
@@ -412,6 +413,33 @@ class RegistryBrokerClient:
             payload["q"] = query
         raw = self.call_operation("search", query=payload if payload else None)
         return self._parse_model(raw, SearchResponse)
+
+    def delegate(
+        self,
+        *,
+        task: str,
+        context: str | None = None,
+        limit: int | None = None,
+        query_filter: JsonObject | None = None,
+        workspace: JsonObject | None = None,
+        **kwargs: object,
+    ) -> DelegationPlanResponse:
+        payload: JsonObject = {"task": task}
+        if context is not None:
+            payload["context"] = context
+        if limit is not None:
+            payload["limit"] = limit
+        legacy_filter = kwargs.pop("filter", None)
+        if kwargs:
+            unexpected = ", ".join(sorted(kwargs))
+            raise TypeError(f"Unexpected keyword argument(s): {unexpected}")
+        effective_filter = query_filter if query_filter is not None else legacy_filter
+        if effective_filter is not None:
+            payload["filter"] = cast(JsonObject, effective_filter)
+        if workspace is not None:
+            payload["workspace"] = workspace
+        raw = self.call_operation("delegate", body=payload)
+        return self._parse_model(raw, DelegationPlanResponse)
 
     def search_erc8004_by_agent_id(
         self,
