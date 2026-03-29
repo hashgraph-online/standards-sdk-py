@@ -21,6 +21,26 @@ class SearchHit(BaseModel):
     score: float | None = None
     metadata: SearchHitMetadata | None = None
 
+    def __getitem__(self, key: str) -> object:
+        payload = self.model_dump(by_alias=True)
+        return payload[key]
+
+    def get(self, key: str, default: object | None = None) -> object | None:
+        payload = self.model_dump(by_alias=True)
+        return payload.get(key, default)
+
+    def keys(self) -> list[str]:
+        payload = self.model_dump(by_alias=True)
+        return list(payload.keys())
+
+    def items(self) -> list[tuple[str, object]]:
+        payload = self.model_dump(by_alias=True)
+        return list(payload.items())
+
+    def values(self) -> list[object]:
+        payload = self.model_dump(by_alias=True)
+        return list(payload.values())
+
 
 class SearchHitMetadata(RegistryBrokerResponse):
     """Structured search hit metadata for delegation-aware broker responses."""

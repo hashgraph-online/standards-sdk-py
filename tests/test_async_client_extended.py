@@ -241,6 +241,21 @@ async def test_async_delegate() -> None:
 
 
 @pytest.mark.asyncio
+async def test_async_delegate_accepts_query_filter_alias() -> None:
+    transport = MagicMock(spec=AsyncHttpTransport)
+    transport.base_url = "https://example.test"
+    transport.headers = {}
+    transport.request_json = AsyncMock(return_value=_MOCK_DELEGATION)
+    client = _make_async_client(transport)
+    result = await client.delegate(
+        task="Review SDK PR feedback",
+        query_filter={"protocols": ["mcp"]},
+    )
+    assert result.should_delegate is True
+    transport.request_json.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_async_search_parses_typed_delegation_metadata() -> None:
     transport = MagicMock(spec=AsyncHttpTransport)
     transport.base_url = "https://example.test"
@@ -252,6 +267,8 @@ async def test_async_search_parses_typed_delegation_metadata() -> None:
     assert result.hits[0].metadata is not None
     assert result.hits[0].metadata.delegation_roles == ["docs"]
     assert result.hits[0].metadata.delegation_signals["verified"] is True
+    assert result.hits[0]["uaid"] == "uaid-1"
+    assert result.hits[0].get("score") == 0.98
 
 
 # ── call_operation ───────────────────────────────────────────────────

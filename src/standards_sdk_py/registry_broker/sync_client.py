@@ -420,16 +420,22 @@ class RegistryBrokerClient:
         task: str,
         context: str | None = None,
         limit: int | None = None,
-        filter: JsonObject | None = None,
+        query_filter: JsonObject | None = None,
         workspace: JsonObject | None = None,
+        **kwargs: object,
     ) -> DelegationPlanResponse:
         payload: JsonObject = {"task": task}
         if context is not None:
             payload["context"] = context
         if limit is not None:
             payload["limit"] = limit
-        if filter is not None:
-            payload["filter"] = filter
+        legacy_filter = kwargs.pop("filter", None)
+        if kwargs:
+            unexpected = ", ".join(sorted(kwargs))
+            raise TypeError(f"Unexpected keyword argument(s): {unexpected}")
+        effective_filter = query_filter if query_filter is not None else legacy_filter
+        if effective_filter is not None:
+            payload["filter"] = cast(JsonObject, effective_filter)
         if workspace is not None:
             payload["workspace"] = workspace
         raw = self.call_operation("delegate", body=payload)

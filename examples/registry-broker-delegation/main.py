@@ -29,10 +29,22 @@ def _build_client() -> RegistryBrokerClient:
 def main() -> None:
     client = _build_client()
     try:
+        limit_raw = os.getenv("REGISTRY_BROKER_DELEGATION_LIMIT", "3").strip()
+        try:
+            limit = int(limit_raw)
+        except ValueError:
+            print(
+                "error: REGISTRY_BROKER_DELEGATION_LIMIT must be a positive integer, "
+                f"got {limit_raw!r}"
+            )
+            return
+        if limit <= 0:
+            print("error: REGISTRY_BROKER_DELEGATION_LIMIT must be greater than zero")
+            return
         response = client.delegate(
             task=os.getenv("REGISTRY_BROKER_DELEGATION_TASK", DEFAULT_TASK).strip(),
             context=os.getenv("REGISTRY_BROKER_DELEGATION_CONTEXT", "").strip() or None,
-            limit=int(os.getenv("REGISTRY_BROKER_DELEGATION_LIMIT", "3")),
+            limit=limit,
         )
         print(f"task={response.task}")
         print(f"shouldDelegate={response.should_delegate}")
