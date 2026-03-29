@@ -351,6 +351,21 @@ def test_search_hit_mapping_preserves_missing_key_behavior() -> None:
     assert hit.get("metadata") is None
 
 
+def test_search_hit_mapping_preserves_explicit_nulls_and_extra_fields() -> None:
+    hit = SearchHit.model_validate(
+        {
+            "uaid": "uaid-1",
+            "metadata": None,
+            "verified": None,
+            "customScore": 7,
+        }
+    )
+    assert hit["metadata"] is None
+    assert hit["verified"] is None
+    assert hit.get("customScore") == 7
+    assert dict(hit.items())["customScore"] == 7
+
+
 # ── call_operation ───────────────────────────────────────────────────
 
 

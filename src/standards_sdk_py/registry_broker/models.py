@@ -22,7 +22,11 @@ class SearchHit(BaseModel):
     metadata: SearchHitMetadata | None = None
 
     def _mapping_payload(self) -> dict[str, object]:
-        return self.model_dump(by_alias=True, exclude_none=True, exclude_unset=True)
+        payload = self.model_dump(by_alias=True, exclude_unset=True)
+        extras = self.model_extra or {}
+        if extras:
+            payload.update(extras)
+        return payload
 
     def __getitem__(self, key: str) -> object:
         payload = self._mapping_payload()
