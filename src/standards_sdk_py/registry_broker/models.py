@@ -36,6 +36,12 @@ class SearchHit(BaseModel):
         payload = self._mapping_payload()
         return payload.get(key, default)
 
+    def __contains__(self, key: object) -> bool:
+        if not isinstance(key, str):
+            return False
+        payload = self._mapping_payload()
+        return key in payload
+
     def keys(self) -> list[str]:
         payload = self._mapping_payload()
         return list(payload.keys())

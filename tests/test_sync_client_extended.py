@@ -364,6 +364,10 @@ def test_search_hit_mapping_preserves_explicit_nulls_and_extra_fields() -> None:
     assert hit["verified"] is None
     assert hit.get("customScore") == 7
     assert dict(hit.items())["customScore"] == 7
+    assert "metadata" in hit
+    assert "verified" in hit
+    assert "customScore" in hit
+    assert "missing" not in hit
 
 
 # ── call_operation ───────────────────────────────────────────────────
