@@ -220,7 +220,7 @@ jobs:
             exit 0
           fi
 
-          body="$(gh release view "${tag}" --repo "${GH_REPO}" --json body --jq '.body // \"\"')"
+          body="$(gh release view "${tag}" --repo "${GH_REPO}" --json body --jq '.body // ""')"
           if printf '%s' "${body}" | grep -Fq "${HOL_SDK_DOCS_URL}"; then
             echo "Release ${tag} already contains canonical docs URL."
             exit 0
