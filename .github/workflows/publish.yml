@@ -193,6 +193,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
@@ -209,15 +211,16 @@ jobs:
           docs_line="- Standards SDK docs: ${HOL_SDK_DOCS_URL}"
           release_notes="$(printf '## Documentation\n%s\n' "${docs_line}")"
 
-          if ! gh release view "${tag}" >/dev/null 2>&1; then
+          if ! gh release view "${tag}" --repo "${GH_REPO}" >/dev/null 2>&1; then
             gh release create "${tag}" \
+              --repo "${GH_REPO}" \
               --title "${tag}" \
               --generate-notes \
               --notes "${release_notes}"
             exit 0
           fi
 
-          body="$(gh release view "${tag}" --json body --jq '.body // \"\"')"
+          body="$(gh release view "${tag}" --repo "${GH_REPO}" --json body --jq '.body // \"\"')"
           if printf '%s' "${body}" | grep -Fq "${HOL_SDK_DOCS_URL}"; then
             echo "Release ${tag} already contains canonical docs URL."
             exit 0
@@ -228,7 +231,7 @@ jobs:
             printf '%s\n' "${body}"
             printf '\n%s' "${release_notes}"
           } > "${notes_file}"
-          gh release edit "${tag}" --notes-file "${notes_file}"
+          gh release edit "${tag}" --repo "${GH_REPO}" --notes-file "${notes_file}"
           rm -f "${notes_file}"
 
   ecosystem-indexing:
@@ -240,15 +243,19 @@ jobs:
       - name: Verify PyPI and Libraries.io indexing
         run: |
           python - <<'PY'
+          import json
+          import os
           import sys
           import time
           import urllib.error
           import urllib.request
 
-          urls = (
-              "https://pypi.org/project/standards-sdk-py/",
-              "https://libraries.io/pypi/standards-sdk-py",
-          )
+          ref_name = os.environ.get("GITHUB_REF_NAME", "")
+          tag_prefix = "standards-sdk-py-v"
+          expected_version = ref_name[len(tag_prefix):] if ref_name.startswith(tag_prefix) else None
+          project_url = "https://pypi.org/project/standards-sdk-py/"
+          pypi_json_url = "https://pypi.org/pypi/standards-sdk-py/json"
+          libraries_url = "https://libraries.io/pypi/standards-sdk-py"
 
           def wait_for_index(url: str) -> None:
               for attempt in range(1, 11):
@@ -273,8 +280,40 @@ jobs:
                       raise
               raise RuntimeError(f"Timed out waiting for index: {url}")
 
-          for target in urls:
-              wait_for_index(target)
+          def wait_for_pypi_version(url: str, version: str | None) -> None:
+              for attempt in range(1, 11):
+                  try:
+                      request = urllib.request.Request(
+                          url,
+                          headers={"User-Agent": "standards-sdk-py-publish-check"},
+                      )
+                      with urllib.request.urlopen(request, timeout=20) as response:
+                          payload = json.loads(response.read().decode("utf-8"))
+                  except urllib.error.HTTPError as exc:
+                      if exc.code == 404 and attempt < 10:
+                          time.sleep(30)
+                          continue
+                      raise
+                  except urllib.error.URLError:
+                      if attempt < 10:
+                          time.sleep(30)
+                          continue
+                      raise
+
+                  indexed_version = payload.get("info", {}).get("version")
+                  if version is None or indexed_version == version:
+                      print(f"PyPI indexed version: {indexed_version}")
+                      return
+                  if attempt < 10:
+                      time.sleep(30)
+                      continue
+                  raise RuntimeError(
+                      f"Timed out waiting for PyPI version {version}; last observed {indexed_version}"
+                  )
+
+          wait_for_index(project_url)
+          wait_for_pypi_version(pypi_json_url, expected_version)
+          wait_for_index(libraries_url)
 
           print("PyPI + Libraries.io indexing verified.")
           PY
