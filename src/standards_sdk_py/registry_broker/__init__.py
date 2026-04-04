@@ -12,7 +12,10 @@ from standards_sdk_py.registry_broker.models import (
     RegistriesResponse,
     SearchResponse,
     SendMessageResponse,
+    SkillPreviewLookupResponse,
+    SkillPreviewRecord,
     SkillPublishResponse,
+    SkillStatusResponse,
     StatsResponse,
     VerificationStatusResponse,
 )
@@ -33,7 +36,10 @@ __all__ = [
     "RegistryBrokerClient",
     "SearchResponse",
     "SendMessageResponse",
+    "SkillPreviewLookupResponse",
+    "SkillPreviewRecord",
     "SkillPublishResponse",
+    "SkillStatusResponse",
     "StatsResponse",
     "VerificationStatusResponse",
 ]

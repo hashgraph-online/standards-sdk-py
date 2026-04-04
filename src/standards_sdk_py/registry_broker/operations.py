@@ -102,6 +102,17 @@ REGISTRY_BROKER_OPERATIONS: dict[str, OperationSpec] = {
     "get_skill_deprecations": OperationSpec("GET", "/skills/deprecations"),
     "set_skill_deprecation": OperationSpec("POST", "/skills/deprecate"),
     "get_skill_badge": OperationSpec("GET", "/skills/badge"),
+    "get_skill_status": OperationSpec("GET", "/skills/status"),
+    "get_skill_status_by_repo": OperationSpec("GET", "/skills/status/by-repo"),
+    "upload_skill_preview_from_github_oidc": OperationSpec("POST", "/skills/preview/github-oidc"),
+    "get_skill_preview": OperationSpec("GET", "/skills/preview"),
+    "get_skill_preview_by_repo": OperationSpec("GET", "/skills/preview/by-repo"),
+    "get_skill_preview_by_id": OperationSpec("GET", "/skills/preview/{preview_id}"),
+    "get_skill_install": OperationSpec("GET", "/skills/{skill_ref}/install"),
+    "record_skill_install_copy": OperationSpec(
+        "POST",
+        "/skills/{skill_ref}/telemetry/install-copy",
+    ),
     "list_skill_tags": OperationSpec("GET", "/skills/tags"),
     "list_skill_categories": OperationSpec("GET", "/skills/categories"),
     "resolve_skill_markdown": OperationSpec(
