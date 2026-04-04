@@ -1,4 +1,4 @@
-{% set version = environ.get("PKG_VERSION") or "0.1.11" %}
+{% set version = environ.get("PKG_VERSION") or "0.1.12" %}
 
 package:
   name: standards-sdk-py
