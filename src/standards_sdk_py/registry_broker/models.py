@@ -192,3 +192,134 @@ class SkillPublishResponse(RegistryBrokerResponse):
 
     job_id: str | None = Field(default=None, alias="jobId")
     accepted: bool | None = None
+
+
+class SkillStatusNextStep(RegistryBrokerResponse):
+    """Next recommended lifecycle step for a skill."""
+
+    kind: str
+    priority: int
+    id: str
+    label: str
+    description: str
+    url: str | None = None
+    href: str | None = None
+    command: str | None = None
+
+
+class SkillPreviewSuggestedNextStep(RegistryBrokerResponse):
+    """Suggested next action embedded in a preview report."""
+
+    id: str
+    label: str
+    description: str
+    command: str | None = None
+    href: str | None = None
+
+
+class SkillPreviewReport(RegistryBrokerResponse):
+    """Skill preview report uploaded from GitHub OIDC validation runs."""
+
+    schema_version: str
+    tool_version: str
+    preview_id: str
+    repo_url: str
+    repo_owner: str
+    repo_name: str
+    default_branch: str
+    commit_sha: str
+    ref: str
+    event_name: str
+    workflow_run_url: str
+    skill_dir: str
+    name: str
+    version: str
+    validation_status: str
+    findings: list[object] = Field(default_factory=list)
+    package_summary: dict[str, object] = Field(default_factory=dict)
+    suggested_next_steps: list[SkillPreviewSuggestedNextStep] = Field(default_factory=list)
+    generated_at: str
+
+
+class SkillPreviewRecord(RegistryBrokerResponse):
+    """Stored preview record surfaced by the broker."""
+
+    id: str
+    preview_id: str = Field(alias="previewId")
+    source: str
+    report: SkillPreviewReport
+    generated_at: str = Field(alias="generatedAt")
+    expires_at: str = Field(alias="expiresAt")
+    status_url: str = Field(alias="statusUrl")
+    authoritative: bool
+
+
+class SkillPreviewLookupResponse(RegistryBrokerResponse):
+    """Preview lookup response for skill refs or repos."""
+
+    found: bool
+    authoritative: bool
+    preview: SkillPreviewRecord | None = None
+    status_url: str | None = Field(default=None, alias="statusUrl")
+    expires_at: str | None = Field(default=None, alias="expiresAt")
+
+
+class SkillStatusPreviewMetadata(RegistryBrokerResponse):
+    """Preview metadata attached to the canonical skill status response."""
+
+    preview_id: str = Field(alias="previewId")
+    repo_url: str = Field(alias="repoUrl")
+    repo_owner: str = Field(alias="repoOwner")
+    repo_name: str = Field(alias="repoName")
+    commit_sha: str = Field(alias="commitSha")
+    ref: str
+    event_name: str = Field(alias="eventName")
+    skill_dir: str = Field(alias="skillDir")
+    generated_at: str = Field(alias="generatedAt")
+    expires_at: str = Field(alias="expiresAt")
+    status_url: str = Field(alias="statusUrl")
+
+
+class SkillStatusChecks(RegistryBrokerResponse):
+    """Integrity checks contributing to lifecycle trust state."""
+
+    repo_commit_integrity: bool = Field(alias="repoCommitIntegrity")
+    manifest_integrity: bool = Field(alias="manifestIntegrity")
+    domain_proof: bool = Field(alias="domainProof")
+
+
+class SkillStatusVerificationSignals(RegistryBrokerResponse):
+    """Verification-oriented status signals."""
+
+    publisher_bound: bool = Field(alias="publisherBound")
+    domain_proof: bool = Field(alias="domainProof")
+    verified_domain: bool = Field(alias="verifiedDomain")
+    preview_validated: bool = Field(alias="previewValidated")
+
+
+class SkillStatusProvenanceSignals(RegistryBrokerResponse):
+    """Provenance-oriented status signals."""
+
+    repo_commit_integrity: bool = Field(alias="repoCommitIntegrity")
+    manifest_integrity: bool = Field(alias="manifestIntegrity")
+    canonical_release: bool = Field(alias="canonicalRelease")
+    preview_available: bool = Field(alias="previewAvailable")
+    preview_authoritative: bool = Field(alias="previewAuthoritative")
+
+
+class SkillStatusResponse(RegistryBrokerResponse):
+    """Canonical lifecycle status for a skill release or repo preview."""
+
+    name: str
+    version: str | None = None
+    published: bool
+    verified_domain: bool = Field(alias="verifiedDomain")
+    trust_tier: str = Field(alias="trustTier")
+    badge_metric: str = Field(alias="badgeMetric")
+    checks: SkillStatusChecks
+    next_steps: list[SkillStatusNextStep] = Field(default_factory=list, alias="nextSteps")
+    verification_signals: SkillStatusVerificationSignals = Field(alias="verificationSignals")
+    provenance_signals: SkillStatusProvenanceSignals = Field(alias="provenanceSignals")
+    publisher: dict[str, object] | None = None
+    preview: SkillStatusPreviewMetadata | None = None
+    status_url: str | None = Field(default=None, alias="statusUrl")

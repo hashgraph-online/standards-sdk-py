@@ -22,9 +22,13 @@ from standards_sdk_py.registry_broker.models import (
     ProtocolsResponse,
     RegistrationProgressResponse,
     RegistriesResponse,
+    RegistryBrokerResponse,
     SearchResponse,
     SendMessageResponse,
+    SkillPreviewLookupResponse,
+    SkillPreviewRecord,
     SkillPublishResponse,
+    SkillStatusResponse,
     StatsResponse,
     VerificationStatusResponse,
 )
@@ -490,6 +494,96 @@ class AsyncRegistryBrokerClient:
     async def publish_skill(self, payload: JsonObject) -> SkillPublishResponse:
         raw = await self.call_operation("publish_skill", body=payload)
         return self._parse_model(raw, SkillPublishResponse)
+
+    async def get_skill_status(
+        self,
+        *,
+        name: str,
+        version: str | None = None,
+    ) -> SkillStatusResponse:
+        query: dict[str, object] = {"name": name}
+        if version is not None:
+            query["version"] = version
+        raw = await self.call_operation("get_skill_status", query=query)
+        return self._parse_model(raw, SkillStatusResponse)
+
+    async def get_skill_status_by_repo(
+        self,
+        *,
+        repo: str,
+        skill_dir: str,
+        ref: str | None = None,
+    ) -> SkillStatusResponse:
+        query: dict[str, object] = {"repo": repo, "skillDir": skill_dir}
+        if ref is not None:
+            query["ref"] = ref
+        raw = await self.call_operation("get_skill_status_by_repo", query=query)
+        return self._parse_model(raw, SkillStatusResponse)
+
+    async def get_skill_preview(
+        self,
+        *,
+        name: str,
+        version: str | None = None,
+    ) -> SkillPreviewLookupResponse:
+        query: dict[str, object] = {"name": name}
+        if version is not None:
+            query["version"] = version
+        raw = await self.call_operation("get_skill_preview", query=query)
+        return self._parse_model(raw, SkillPreviewLookupResponse)
+
+    async def get_skill_preview_by_repo(
+        self,
+        *,
+        repo: str,
+        skill_dir: str,
+        ref: str | None = None,
+    ) -> SkillPreviewLookupResponse:
+        query: dict[str, object] = {"repo": repo, "skillDir": skill_dir}
+        if ref is not None:
+            query["ref"] = ref
+        raw = await self.call_operation("get_skill_preview_by_repo", query=query)
+        return self._parse_model(raw, SkillPreviewLookupResponse)
+
+    async def get_skill_preview_by_id(self, preview_id: str) -> SkillPreviewLookupResponse:
+        raw = await self.call_operation(
+            "get_skill_preview_by_id",
+            path_params={"preview_id": preview_id},
+        )
+        return self._parse_model(raw, SkillPreviewLookupResponse)
+
+    async def get_skill_install(self, skill_ref: str) -> RegistryBrokerResponse:
+        raw = await self.call_operation(
+            "get_skill_install",
+            path_params={"skill_ref": skill_ref},
+        )
+        return self._parse_model(raw, RegistryBrokerResponse)
+
+    async def record_skill_install_copy(
+        self,
+        skill_ref: str,
+        payload: JsonObject | None = None,
+    ) -> RegistryBrokerResponse:
+        raw = await self.call_operation(
+            "record_skill_install_copy",
+            path_params={"skill_ref": skill_ref},
+            body=payload or {},
+            headers={"content-type": "application/json"},
+        )
+        return self._parse_model(raw, RegistryBrokerResponse)
+
+    async def upload_skill_preview_from_github_oidc(
+        self,
+        *,
+        token: str,
+        report: JsonObject,
+    ) -> SkillPreviewRecord:
+        raw = await self.call_operation(
+            "upload_skill_preview_from_github_oidc",
+            body=report,
+            headers={"authorization": f"Bearer {token}"},
+        )
+        return self._parse_model(raw, SkillPreviewRecord)
 
     async def create_ledger_challenge(self, payload: JsonObject) -> JsonValue | str:
         return await self.call_operation("create_ledger_challenge", body=payload)
