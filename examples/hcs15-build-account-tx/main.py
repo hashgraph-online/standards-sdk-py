@@ -2,37 +2,49 @@
 
 from __future__ import annotations
 
+import os
+
 from standards_sdk_py.hcs15 import (
     HCS15Client,
     Hcs15CreateBaseAccountOptions,
     Hcs15CreatePetalAccountOptions,
 )
 
-_TEST_OPERATOR_ID = "0.0.1001"
-_TEST_OPERATOR_KEY = (
-    "302e020100300506032b657004220420fb77695921a5c79474d57c42006f03ff"
-    "178688514d797fb30f60fd0fc9e82716"
-)
-_TEST_BASE_PRIVATE_KEY = (
-    "302e020100300506032b657004220420c3f8c7d1a0ca5d4bb5561a7b7d8895f0"
-    "773f64e2f802305c6d7a5cab6f0172f3"
-)
+
+def _required_env(primary: str, secondary: str | None = None) -> str:
+    for name in (primary, secondary):
+        if not name:
+            continue
+        value = os.getenv(name)
+        if value and value.strip():
+            return value.strip()
+    if secondary:
+        raise RuntimeError(f"Missing required environment variable: {primary} (or {secondary})")
+    raise RuntimeError(f"Missing required environment variable: {primary}")
 
 
 def main() -> None:
+    operator_id = _required_env("TESTNET_HEDERA_ACCOUNT_ID", "HEDERA_ACCOUNT_ID")
+    operator_key = _required_env("TESTNET_HEDERA_PRIVATE_KEY", "HEDERA_PRIVATE_KEY")
+    network = os.getenv("HEDERA_NETWORK", "testnet").strip() or "testnet"
+    base_private_key = os.getenv("HCS15_BASE_PRIVATE_KEY")
+    if not base_private_key or not base_private_key.strip():
+        base_private_key = operator_key
+    base_private_key = base_private_key.strip()
+
     base_options = Hcs15CreateBaseAccountOptions(
         initialBalance=2.0,
         accountMemo="hcs15 base account example",
     )
     petal_options = Hcs15CreatePetalAccountOptions(
-        basePrivateKey=_TEST_BASE_PRIVATE_KEY,
+        basePrivateKey=base_private_key,
         initialBalance=1.0,
         accountMemo="hcs15 petal account example",
     )
     client = HCS15Client(
-        operator_id=_TEST_OPERATOR_ID,
-        operator_key=_TEST_OPERATOR_KEY,
-        network="testnet",
+        operator_id=operator_id,
+        operator_key=operator_key,
+        network=network,
     )
     try:
         print(

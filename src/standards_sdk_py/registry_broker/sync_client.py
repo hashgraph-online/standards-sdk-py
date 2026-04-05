@@ -9,6 +9,7 @@ import re
 from collections.abc import Callable
 from time import monotonic, sleep
 from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast
+from urllib.parse import quote
 
 import httpx
 from pydantic import BaseModel
@@ -21,12 +22,15 @@ from standards_sdk_py.registry_broker.models import (
     ProtocolsResponse,
     RegistrationProgressResponse,
     RegistriesResponse,
-    RegistryBrokerResponse,
     SearchResponse,
     SendMessageResponse,
+    SkillConversionSignalsResponse,
+    SkillInstallCopyTelemetryResponse,
+    SkillInstallResponse,
     SkillPreviewLookupResponse,
     SkillPreviewRecord,
     SkillPublishResponse,
+    SkillQuotePreviewResponse,
     SkillStatusResponse,
     StatsResponse,
     VerificationStatusResponse,
@@ -94,7 +98,7 @@ def _fill_path(path: str, path_params: dict[str, str] | None) -> str:
         return path
     formatted = path
     for key, value in path_params.items():
-        formatted = formatted.replace(f"{{{key}}}", value)
+        formatted = formatted.replace(f"{{{key}}}", quote(value, safe=""))
     if "{" in formatted or "}" in formatted:
         raise ValidationError(
             "Missing required path parameter",
@@ -560,6 +564,41 @@ class RegistryBrokerClient:
         raw = self.call_operation("get_skill_status_by_repo", query=query)
         return self._parse_model(raw, SkillStatusResponse)
 
+    def quote_skill_publish_preview(
+        self,
+        *,
+        file_count: int,
+        total_bytes: int,
+        name: str | None = None,
+        version: str | None = None,
+        repo_url: str | None = None,
+        skill_dir: str | None = None,
+    ) -> SkillQuotePreviewResponse:
+        payload: dict[str, object] = {"fileCount": file_count, "totalBytes": total_bytes}
+        if name is not None:
+            payload["name"] = name
+        if version is not None:
+            payload["version"] = version
+        if repo_url is not None:
+            payload["repoUrl"] = repo_url
+        if skill_dir is not None:
+            payload["skillDir"] = skill_dir
+        raw = self.call_operation("quote_skill_publish_preview", body=payload)
+        return self._parse_model(raw, SkillQuotePreviewResponse)
+
+    def get_skill_conversion_signals_by_repo(
+        self,
+        *,
+        repo: str,
+        skill_dir: str,
+        ref: str | None = None,
+    ) -> SkillConversionSignalsResponse:
+        query: dict[str, object] = {"repo": repo, "skillDir": skill_dir}
+        if ref is not None:
+            query["ref"] = ref
+        raw = self.call_operation("get_skill_conversion_signals_by_repo", query=query)
+        return self._parse_model(raw, SkillConversionSignalsResponse)
+
     def get_skill_preview(
         self,
         *,
@@ -592,25 +631,25 @@ class RegistryBrokerClient:
         )
         return self._parse_model(raw, SkillPreviewLookupResponse)
 
-    def get_skill_install(self, skill_ref: str) -> RegistryBrokerResponse:
+    def get_skill_install(self, skill_ref: str) -> SkillInstallResponse:
         raw = self.call_operation(
             "get_skill_install",
             path_params={"skill_ref": skill_ref},
         )
-        return self._parse_model(raw, RegistryBrokerResponse)
+        return self._parse_model(raw, SkillInstallResponse)
 
     def record_skill_install_copy(
         self,
         skill_ref: str,
         payload: JsonObject | None = None,
-    ) -> RegistryBrokerResponse:
+    ) -> SkillInstallCopyTelemetryResponse:
         raw = self.call_operation(
             "record_skill_install_copy",
             path_params={"skill_ref": skill_ref},
             body=payload or {},
             headers={"content-type": "application/json"},
         )
-        return self._parse_model(raw, RegistryBrokerResponse)
+        return self._parse_model(raw, SkillInstallCopyTelemetryResponse)
 
     def upload_skill_preview_from_github_oidc(
         self,

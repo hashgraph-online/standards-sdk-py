@@ -104,6 +104,11 @@ REGISTRY_BROKER_OPERATIONS: dict[str, OperationSpec] = {
     "get_skill_badge": OperationSpec("GET", "/skills/badge"),
     "get_skill_status": OperationSpec("GET", "/skills/status"),
     "get_skill_status_by_repo": OperationSpec("GET", "/skills/status/by-repo"),
+    "quote_skill_publish_preview": OperationSpec("POST", "/skills/quote-preview"),
+    "get_skill_conversion_signals_by_repo": OperationSpec(
+        "GET",
+        "/skills/conversion-signals/by-repo",
+    ),
     "upload_skill_preview_from_github_oidc": OperationSpec("POST", "/skills/preview/github-oidc"),
     "get_skill_preview": OperationSpec("GET", "/skills/preview"),
     "get_skill_preview_by_repo": OperationSpec("GET", "/skills/preview/by-repo"),

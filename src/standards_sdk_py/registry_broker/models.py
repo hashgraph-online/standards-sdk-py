@@ -195,7 +195,7 @@ class SkillPublishResponse(RegistryBrokerResponse):
 
 
 class SkillStatusNextStep(RegistryBrokerResponse):
-    """Next recommended lifecycle step for a skill."""
+    """Structured next-step recommendation for a skill lifecycle state."""
 
     kind: str
     priority: int
@@ -208,7 +208,7 @@ class SkillStatusNextStep(RegistryBrokerResponse):
 
 
 class SkillPreviewSuggestedNextStep(RegistryBrokerResponse):
-    """Suggested next action embedded in a preview report."""
+    """Suggested next step emitted from validate and monitor preview reports."""
 
     id: str
     label: str
@@ -218,7 +218,7 @@ class SkillPreviewSuggestedNextStep(RegistryBrokerResponse):
 
 
 class SkillPreviewReport(RegistryBrokerResponse):
-    """Skill preview report uploaded from GitHub OIDC validation runs."""
+    """Preview report payload uploaded from GitHub OIDC validation runs."""
 
     schema_version: str
     tool_version: str
@@ -323,3 +323,58 @@ class SkillStatusResponse(RegistryBrokerResponse):
     publisher: dict[str, object] | None = None
     preview: SkillStatusPreviewMetadata | None = None
     status_url: str | None = Field(default=None, alias="statusUrl")
+
+
+class SkillQuotePreviewRange(RegistryBrokerResponse):
+    """Estimated publish credit range for an anonymous quote preview."""
+
+    min: int
+    max: int
+
+
+class SkillQuotePreviewResponse(RegistryBrokerResponse):
+    """Anonymous quote preview response for validate and monitor flows."""
+
+    estimated_credits: SkillQuotePreviewRange = Field(alias="estimatedCredits")
+    estimated_hbar: dict[str, float] | None = Field(default=None, alias="estimatedHbar")
+    pricing_version: str = Field(alias="pricingVersion")
+    assumptions: list[str] = Field(default_factory=list)
+    purchase_url: str | None = Field(default=None, alias="purchaseUrl")
+    publish_url: str | None = Field(default=None, alias="publishUrl")
+    verification_url: str | None = Field(default=None, alias="verificationUrl")
+
+
+class SkillConversionSignalsResponse(RegistryBrokerResponse):
+    """Repo-level conversion signals for monitor and GTM routing flows."""
+
+    repo_url: str = Field(alias="repoUrl")
+    skill_dir: str = Field(alias="skillDir")
+    trust_tier: str = Field(alias="trustTier")
+    action_installed: bool = Field(alias="actionInstalled")
+    preview_uploaded: bool = Field(alias="previewUploaded")
+    preview_id: str | None = Field(default=None, alias="previewId")
+    last_validate_success_at: str | None = Field(default=None, alias="lastValidateSuccessAt")
+    stale_preview_age_days: int | None = Field(default=None, alias="stalePreviewAgeDays")
+    published: bool
+    verified: bool
+    publish_ready: bool = Field(alias="publishReady")
+    publish_blocked_by_missing_auth: bool = Field(alias="publishBlockedByMissingAuth")
+    status_url: str | None = Field(default=None, alias="statusUrl")
+    purchase_url: str | None = Field(default=None, alias="purchaseUrl")
+    publish_url: str | None = Field(default=None, alias="publishUrl")
+    verification_url: str | None = Field(default=None, alias="verificationUrl")
+    next_steps: list[SkillStatusNextStep] = Field(default_factory=list, alias="nextSteps")
+
+
+class SkillInstallResponse(RegistryBrokerResponse):
+    """Canonical install response for a skill detail page or client."""
+
+    name: str
+    version: str
+    skill_ref: str = Field(alias="skillRef")
+
+
+class SkillInstallCopyTelemetryResponse(RegistryBrokerResponse):
+    """Install copy telemetry acknowledgement."""
+
+    accepted: bool

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from standards_sdk_py.hcs2 import (
     CreateRegistryOptions,
     HCS2Client,
@@ -9,14 +11,24 @@ from standards_sdk_py.hcs2 import (
     Hcs2RegistryType,
 )
 
-_TEST_OPERATOR_ID = "0.0.1001"
-_TEST_OPERATOR_KEY = (
-    "302e020100300506032b657004220420fb77695921a5c79474d57c42006f03ff"
-    "178688514d797fb30f60fd0fc9e82716"
-)
+
+def _required_env(primary: str, secondary: str | None = None) -> str:
+    for name in (primary, secondary):
+        if not name:
+            continue
+        value = os.getenv(name)
+        if value and value.strip():
+            return value.strip()
+    if secondary:
+        raise RuntimeError(f"Missing required environment variable: {primary} (or {secondary})")
+    raise RuntimeError(f"Missing required environment variable: {primary}")
 
 
 def main() -> None:
+    operator_id = _required_env("TESTNET_HEDERA_ACCOUNT_ID", "HEDERA_ACCOUNT_ID")
+    operator_key = _required_env("TESTNET_HEDERA_PRIVATE_KEY", "HEDERA_PRIVATE_KEY")
+    network = os.getenv("HEDERA_NETWORK", "testnet").strip() or "testnet"
+
     create_options = CreateRegistryOptions(
         registryType=Hcs2RegistryType.INDEXED,
         ttl=3600,
@@ -31,9 +43,9 @@ def main() -> None:
     )
 
     client = HCS2Client(
-        operator_id=_TEST_OPERATOR_ID,
-        operator_key=_TEST_OPERATOR_KEY,
-        network="testnet",
+        operator_id=operator_id,
+        operator_key=operator_key,
+        network=network,
     )
     try:
         print(

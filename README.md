@@ -109,6 +109,7 @@ For standards and API documentation:
 
 - [Examples index](./examples/README.md)
 - [standards-sdk-discovery](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/standards-sdk-discovery)
+- [registry-broker-free-tier-registration](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/registry-broker-free-tier-registration)
 - [hcs2-create-registry](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs2-create-registry)
 - [hcs5-build-mint](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs5-build-mint)
 - [hcs6-create-registry](https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples/hcs6-create-registry)
