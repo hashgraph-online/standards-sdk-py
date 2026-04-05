@@ -373,7 +373,9 @@ def test_registry_broker_sync_url_encodes_scoped_skill_refs() -> None:
                     "skillRef": "@hashgraph-online/demo-summarizer@1.0.0",
                 },
             )
-        if request.url.raw_path == b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/telemetry/install-copy":
+        if request.url.raw_path == (
+            b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/telemetry/install-copy"
+        ):
             return httpx.Response(200, json={"accepted": True})
         return httpx.Response(404, json={"error": "unexpected path"})
 
