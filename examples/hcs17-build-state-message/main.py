@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from standards_sdk_py.hcs17 import (
     HCS17Client,
     Hcs17ComputeAndPublishOptions,
@@ -9,14 +11,24 @@ from standards_sdk_py.hcs17 import (
     Hcs17SubmitMessageOptions,
 )
 
-_TEST_OPERATOR_ID = "0.0.1001"
-_TEST_OPERATOR_KEY = (
-    "302e020100300506032b657004220420fb77695921a5c79474d57c42006f03ff"
-    "178688514d797fb30f60fd0fc9e82716"
-)
+
+def _required_env(primary: str, secondary: str | None = None) -> str:
+    for name in (primary, secondary):
+        if not name:
+            continue
+        value = os.getenv(name)
+        if value and value.strip():
+            return value.strip()
+    if secondary:
+        raise RuntimeError(f"Missing required environment variable: {primary} (or {secondary})")
+    raise RuntimeError(f"Missing required environment variable: {primary}")
 
 
 def main() -> None:
+    operator_id = _required_env("TESTNET_HEDERA_ACCOUNT_ID", "HEDERA_ACCOUNT_ID")
+    operator_key = _required_env("TESTNET_HEDERA_PRIVATE_KEY", "HEDERA_PRIVATE_KEY")
+    network = os.getenv("HEDERA_NETWORK", "testnet").strip() or "testnet"
+
     state_message = Hcs17StateHashMessage(
         state_hash="6d2f4b7308b3d7bd74a85f5d9f54f6f1278cc5fd1fe9c1c911f66fce2e112ebf",
         topics=["0.0.700080", "0.0.700081"],
@@ -32,9 +44,9 @@ def main() -> None:
         publishTopicId="0.0.700080",
     )
     client = HCS17Client(
-        operator_id=_TEST_OPERATOR_ID,
-        operator_key=_TEST_OPERATOR_KEY,
-        network="testnet",
+        operator_id=operator_id,
+        operator_key=operator_key,
+        network=network,
     )
     print(
         {

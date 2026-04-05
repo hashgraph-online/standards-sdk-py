@@ -2268,13 +2268,6 @@
       "status": "verified"
     },
     {
-      "id": "ts-registry-broker-get-skill-install",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.getSkillInstall",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_install",
-      "status": "verified"
-    },
-    {
       "id": "ts-registry-broker-get-skill-ownership",
       "source_sdk": "ts",
       "source_symbol": "RegistryBrokerClient.getSkillOwnership",
@@ -2289,45 +2282,10 @@
       "status": "verified"
     },
     {
-      "id": "ts-registry-broker-get-skill-preview",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.getSkillPreview",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_preview",
-      "status": "verified"
-    },
-    {
-      "id": "ts-registry-broker-get-skill-preview-by-id",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.getSkillPreviewById",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_preview_by_id",
-      "status": "verified"
-    },
-    {
-      "id": "ts-registry-broker-get-skill-preview-by-repo",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.getSkillPreviewByRepo",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_preview_by_repo",
-      "status": "verified"
-    },
-    {
       "id": "ts-registry-broker-get-skill-security-breakdown",
       "source_sdk": "ts",
       "source_symbol": "RegistryBrokerClient.getSkillSecurityBreakdown",
       "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.getSkillSecurityBreakdown",
-      "status": "verified"
-    },
-    {
-      "id": "ts-registry-broker-get-skill-status",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.getSkillStatus",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_status",
-      "status": "verified"
-    },
-    {
-      "id": "ts-registry-broker-get-skill-status-by-repo",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.getSkillStatusByRepo",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_status_by_repo",
       "status": "verified"
     },
     {
@@ -2541,13 +2499,6 @@
       "status": "verified"
     },
     {
-      "id": "ts-registry-broker-record-skill-install-copy",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.recordSkillInstallCopy",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.record_skill_install_copy",
-      "status": "verified"
-    },
-    {
       "id": "ts-registry-broker-register-owned-moltbook-agent",
       "source_sdk": "ts",
       "source_symbol": "RegistryBrokerClient.registerOwnedMoltbookAgent",
@@ -2716,13 +2667,6 @@
       "status": "verified"
     },
     {
-      "id": "ts-registry-broker-upload-skill-preview-from-github-oidc",
-      "source_sdk": "ts",
-      "source_symbol": "RegistryBrokerClient.uploadSkillPreviewFromGithubOidc",
-      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.upload_skill_preview_from_github_oidc",
-      "status": "verified"
-    },
-    {
       "id": "ts-registry-broker-validate-uaid",
       "source_sdk": "ts",
       "source_symbol": "RegistryBrokerClient.validateUaid",
@@ -2853,6 +2797,76 @@
       "source_sdk": "ts",
       "source_symbol": "RegistryBrokerClient.stats",
       "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.stats",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-status",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillStatus",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_status",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-status-by-repo",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillStatusByRepo",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_status_by_repo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-quote-skill-publish-preview",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.quoteSkillPublishPreview",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.quote_skill_publish_preview",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-conversion-signals-by-repo",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillConversionSignalsByRepo",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_conversion_signals_by_repo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-preview",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillPreview",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_preview",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-preview-by-repo",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillPreviewByRepo",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_preview_by_repo",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-preview-by-id",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillPreviewById",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_preview_by_id",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-upload-skill-preview-from-github-oidc",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.uploadSkillPreviewFromGithubOidc",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.upload_skill_preview_from_github_oidc",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-get-skill-install",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.getSkillInstall",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.get_skill_install",
+      "status": "verified"
+    },
+    {
+      "id": "ts-registry-broker-record-skill-install-copy",
+      "source_sdk": "ts",
+      "source_symbol": "RegistryBrokerClient.recordSkillInstallCopy",
+      "python_symbol": "standards_sdk_py.registry_broker.RegistryBrokerClient.record_skill_install_copy",
       "status": "verified"
     }
   ]

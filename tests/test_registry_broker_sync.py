@@ -28,15 +28,7 @@ def _handler(request: httpx.Request) -> httpx.Response:
                     "manifestIntegrity": True,
                     "domainProof": True,
                 },
-                "nextSteps": [
-                    {
-                        "kind": "share_status",
-                        "priority": 1,
-                        "id": "share-skill",
-                        "label": "Share status",
-                        "description": "Share the canonical page",
-                    }
-                ],
+                "nextSteps": [],
                 "verificationSignals": {
                     "publisherBound": True,
                     "domainProof": True,
@@ -50,27 +42,8 @@ def _handler(request: httpx.Request) -> httpx.Response:
                     "previewAvailable": True,
                     "previewAuthoritative": False,
                 },
-                "publisher": {
-                    "cliPackageUrl": "https://www.npmjs.com/package/skill-publish",
-                    "cliCommand": "npx skill-publish",
-                    "actionMarketplaceUrl": "https://github.com/marketplace/actions/skill-publish",
-                    "repositoryUrl": "https://github.com/hashgraph-online/skill-publish",
-                    "quickstartCommands": [],
-                    "templatePresets": [],
-                },
-                "preview": {
-                    "previewId": "preview-1",
-                    "repoUrl": "https://github.com/hashgraph-online/registry-broker-skill",
-                    "repoOwner": "hashgraph-online",
-                    "repoName": "registry-broker-skill",
-                    "commitSha": "abc123",
-                    "ref": "refs/pull/5/head",
-                    "eventName": "pull_request",
-                    "skillDir": ".",
-                    "generatedAt": "2026-04-04T10:00:00.000Z",
-                    "expiresAt": "2026-04-11T10:00:00.000Z",
-                    "statusUrl": "https://hol.org/registry/skills/preview/preview-1",
-                },
+                "publisher": None,
+                "preview": None,
                 "statusUrl": "https://hol.org/registry/skills/registry-broker?version=1.2.3",
             },
         )
@@ -106,6 +79,42 @@ def _handler(request: httpx.Request) -> httpx.Response:
                 "publisher": None,
                 "preview": None,
                 "statusUrl": "https://hol.org/registry/skills/preview/preview-1",
+            },
+        )
+    if request.url.path == "/skills/quote-preview":
+        return httpx.Response(
+            200,
+            json={
+                "estimatedCredits": {"min": 589, "max": 678},
+                "estimatedHbar": {"min": 4.11, "max": 4.73},
+                "pricingVersion": "2026-04-05",
+                "assumptions": ["2 files", "3 KB total"],
+                "purchaseUrl": "https://hol.org/registry/skills/publish",
+                "publishUrl": "https://hol.org/registry/skills/submit",
+                "verificationUrl": "https://hol.org/registry/skills/registry-broker?tab=verification",
+            },
+        )
+    if request.url.path == "/skills/conversion-signals/by-repo":
+        return httpx.Response(
+            200,
+            json={
+                "repoUrl": "https://github.com/hashgraph-online/registry-broker-skill",
+                "skillDir": ".",
+                "trustTier": "validated",
+                "actionInstalled": True,
+                "previewUploaded": True,
+                "previewId": "preview-1",
+                "lastValidateSuccessAt": "2026-04-05T12:00:00.000Z",
+                "stalePreviewAgeDays": 0,
+                "published": False,
+                "verified": False,
+                "publishReady": True,
+                "publishBlockedByMissingAuth": False,
+                "statusUrl": "https://hol.org/registry/skills/preview/preview-1",
+                "purchaseUrl": "https://hol.org/registry/skills/publish",
+                "publishUrl": "https://hol.org/registry/skills/submit",
+                "verificationUrl": "https://hol.org/registry/skills/registry-broker?tab=verification",
+                "nextSteps": [],
             },
         )
     if request.url.path == "/skills/preview":
@@ -269,36 +278,44 @@ def test_registry_broker_core_flows_sync() -> None:
     publish = client.publish_skill({"name": "skill-a", "version": "1.0.0"})
     assert publish.job_id == "job-1"
 
-    verification = client.get_verification_status("test-uaid")
-    assert verification.verified is True
-
     status = client.get_skill_status(name="registry-broker", version="1.2.3")
     assert status.trust_tier == "verified"
-    assert status.preview is not None
-    assert status.preview.preview_id == "preview-1"
 
-    status_by_repo = client.get_skill_status_by_repo(
-        repo="hashgraph-online/registry-broker-skill",
+    repo_status = client.get_skill_status_by_repo(
+        repo="https://github.com/hashgraph-online/registry-broker-skill",
         skill_dir=".",
-        ref="refs/pull/5/head",
     )
-    assert status_by_repo.published is False
+    assert repo_status.trust_tier == "validated"
+
+    quote = client.quote_skill_publish_preview(
+        file_count=2,
+        total_bytes=3072,
+        name="registry-broker",
+        version="1.2.3",
+        repo_url="https://github.com/hashgraph-online/registry-broker-skill",
+        skill_dir=".",
+    )
+    assert quote.estimated_credits.min == 589
+
+    signals = client.get_skill_conversion_signals_by_repo(
+        repo="https://github.com/hashgraph-online/registry-broker-skill",
+        skill_dir=".",
+        ref="refs/heads/main",
+    )
+    assert signals.publish_ready is True
 
     preview = client.get_skill_preview(name="registry-broker", version="1.2.3")
-    assert preview.found is True
     assert preview.preview is not None
     assert preview.preview.preview_id == "preview-1"
 
     preview_by_repo = client.get_skill_preview_by_repo(
-        repo="hashgraph-online/registry-broker-skill",
+        repo="https://github.com/hashgraph-online/registry-broker-skill",
         skill_dir=".",
-        ref="refs/pull/5/head",
     )
     assert preview_by_repo.found is False
 
     preview_by_id = client.get_skill_preview_by_id("preview-1")
     assert preview_by_id.preview is not None
-    assert preview_by_id.preview.id == "record-1"
 
     uploaded_preview = client.upload_skill_preview_from_github_oidc(
         token="github-token",
@@ -324,16 +341,19 @@ def test_registry_broker_core_flows_sync() -> None:
             "generated_at": "2026-04-04T10:00:00.000Z",
         },
     )
-    assert uploaded_preview.source == "github-oidc"
+    assert uploaded_preview.id == "record-1"
 
     install = client.get_skill_install("registry-broker@1.2.3")
-    assert install.skillRef == "registry-broker@1.2.3"
+    assert install.skill_ref == "registry-broker@1.2.3"
 
     install_copy = client.record_skill_install_copy(
         "registry-broker@1.2.3",
         {"source": "detail_install_card", "installType": "cli"},
     )
     assert install_copy.accepted is True
+
+    verification = client.get_verification_status("test-uaid")
+    assert verification.verified is True
 
     dynamic = client.adapter_registry_categories()
     assert isinstance(dynamic, dict)

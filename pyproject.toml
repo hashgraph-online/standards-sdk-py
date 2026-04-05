@@ -58,6 +58,7 @@ Standards = "https://hol.org/docs/standards/"
 "Registry Broker Docs" = "https://hol.org/registry/docs"
 "CodeSandbox Examples" = "https://codesandbox.io/s/github/hashgraph-online/standards-sdk-py/tree/main/examples"
 Libraries = "https://libraries.io/pypi/standards-sdk-py"
+piwheels = "https://www.piwheels.org/project/standards-sdk-py/"
 
 [project.optional-dependencies]
 dev = [
