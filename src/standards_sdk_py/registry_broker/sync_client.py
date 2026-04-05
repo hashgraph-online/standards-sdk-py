@@ -9,6 +9,7 @@ import re
 from collections.abc import Callable
 from time import monotonic, sleep
 from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast
+from urllib.parse import quote
 
 import httpx
 from pydantic import BaseModel
@@ -97,7 +98,7 @@ def _fill_path(path: str, path_params: dict[str, str] | None) -> str:
         return path
     formatted = path
     for key, value in path_params.items():
-        formatted = formatted.replace(f"{{{key}}}", value)
+        formatted = formatted.replace(f"{{{key}}}", quote(value, safe=""))
     if "{" in formatted or "}" in formatted:
         raise ValidationError(
             "Missing required path parameter",

@@ -351,3 +351,44 @@ async def test_registry_broker_core_flows_async() -> None:
     assert isinstance(dynamic, dict)
 
     await client.close()
+
+
+@pytest.mark.asyncio
+async def test_registry_broker_async_url_encodes_scoped_skill_refs() -> None:
+    raw_paths: list[bytes] = []
+
+    def scoped_handler(request: httpx.Request) -> httpx.Response:
+        raw_paths.append(request.url.raw_path)
+        if request.url.raw_path == b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/install":
+            return httpx.Response(
+                200,
+                json={
+                    "name": "demo-summarizer",
+                    "version": "1.0.0",
+                    "skillRef": "@hashgraph-online/demo-summarizer@1.0.0",
+                },
+            )
+        if request.url.raw_path == b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/telemetry/install-copy":
+            return httpx.Response(200, json={"accepted": True})
+        return httpx.Response(404, json={"error": "unexpected path"})
+
+    transport = AsyncHttpTransport(
+        "https://example.test",
+        client=httpx.AsyncClient(transport=httpx.MockTransport(scoped_handler)),
+    )
+    client = AsyncRegistryBrokerClient(transport=transport)
+
+    install = await client.get_skill_install("@hashgraph-online/demo-summarizer@1.0.0")
+    install_copy = await client.record_skill_install_copy(
+        "@hashgraph-online/demo-summarizer@1.0.0",
+        {"source": "detail_install_card", "installType": "cli"},
+    )
+
+    assert install.skill_ref == "@hashgraph-online/demo-summarizer@1.0.0"
+    assert install_copy.accepted is True
+    assert raw_paths == [
+        b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/install",
+        b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/telemetry/install-copy",
+    ]
+
+    await client.close()

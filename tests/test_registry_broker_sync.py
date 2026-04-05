@@ -357,3 +357,41 @@ def test_registry_broker_core_flows_sync() -> None:
 
     dynamic = client.adapter_registry_categories()
     assert isinstance(dynamic, dict)
+
+
+def test_registry_broker_sync_url_encodes_scoped_skill_refs() -> None:
+    raw_paths: list[bytes] = []
+
+    def scoped_handler(request: httpx.Request) -> httpx.Response:
+        raw_paths.append(request.url.raw_path)
+        if request.url.raw_path == b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/install":
+            return httpx.Response(
+                200,
+                json={
+                    "name": "demo-summarizer",
+                    "version": "1.0.0",
+                    "skillRef": "@hashgraph-online/demo-summarizer@1.0.0",
+                },
+            )
+        if request.url.raw_path == b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/telemetry/install-copy":
+            return httpx.Response(200, json={"accepted": True})
+        return httpx.Response(404, json={"error": "unexpected path"})
+
+    transport = SyncHttpTransport(
+        "https://example.test",
+        client=httpx.Client(transport=httpx.MockTransport(scoped_handler)),
+    )
+    client = RegistryBrokerClient(transport=transport)
+
+    install = client.get_skill_install("@hashgraph-online/demo-summarizer@1.0.0")
+    install_copy = client.record_skill_install_copy(
+        "@hashgraph-online/demo-summarizer@1.0.0",
+        {"source": "detail_install_card", "installType": "cli"},
+    )
+
+    assert install.skill_ref == "@hashgraph-online/demo-summarizer@1.0.0"
+    assert install_copy.accepted is True
+    assert raw_paths == [
+        b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/install",
+        b"/skills/%40hashgraph-online%2Fdemo-summarizer%401.0.0/telemetry/install-copy",
+    ]
